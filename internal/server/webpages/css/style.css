@@ -41,8 +41,9 @@ body{
     display: flex;
 }
 button{
-    color: brown;
-    background-color:rgb(76, 45, 45);
+    color:black;
+    background-color:rgb(83, 60, 60);
+    border-radius: 20px;
 }
 #tab a:hover{
     color: rgba(212, 215, 204, 0.8);

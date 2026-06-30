@@ -7,6 +7,33 @@
     object-fit: contain;
     font-style: Cinzel;
     margin: 0%;
+    position:sticky;
+    top: 0;
+    z-index: 2;
+}
+#quote{
+    position: absolute;
+    top: 35%;
+    left: 33%;
+    font-style: italic;
+    font-size: x-large;
+}
+#footbox{
+    display: flex;
+    padding: 10px 20px;
+    align-items: center;
+}
+#foot a{
+   color: aliceblue;
+}
+#foot a:hover{
+    color: black;
+}
+#foot{
+    margin-left: 30%;
+    justify-content: space-evenly;
+    display: flex;
+    gap: 30px;
 }
 body{
     margin: 0%;
@@ -25,7 +52,8 @@ body{
     width: 100%;
     height: 100%;
     object-fit: cover;
-    display: block;
+    display: block; 
+    position: relative;
 }
 #logo img{
     width: 50px;
@@ -33,7 +61,7 @@ body{
     object-fit: contain;
 }
 #tab a{
-    color:black;
+    color:whitesmoke;
 }
 #tab {
     flex: 1;
@@ -41,11 +69,37 @@ body{
     display: flex;
 }
 button{
-    color:black;
+    color:whitesmoke;
     background-color:rgb(83, 60, 60);
     border-radius: 20px;
 }
+button:hover{
+    color:black;
+}
+.buttons{
+    position: absolute;
+    bottom:  25%;
+    left: 38%;
+    display: flex;
+    gap: 56px;
+    /* font-size: 80px; */
+}
+.buttonstry{
+    padding: 15px 30px;
+    font-size: 12px;
+    border-radius: 15px;
+    font-style: italic ;
+    /* color: black; */
+    border-color: aliceblue;
+    box-shadow: 2px 2px 4px black;
+    background-color:#6F7F6A;/*E8DDC7*/
+}
 #tab a:hover{
-    color: rgba(212, 215, 204, 0.8);
+    color: black;
     border-bottom: 2px solid black;
+}
+#footbox{
+    height: 80px;
+    bottom: 0%;
+    background-color:rgb(43, 42, 42);
 }

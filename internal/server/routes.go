@@ -34,8 +34,24 @@ func (s *Server) RegisterRoutes() http.Handler {
 	return r
 }
 
+func (s *Server) getUserInfoFromSession(c *gin.Context) (*User, error) {
+	session, err := s.store.Get(c.Request, "sessionISWP")
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	userInfo := session.Values["userInfo"]
+
+	if userInfo == nil {
+		return nil, nil
+	}
+
+	return userInfo.(*User), nil
+}
+
 func (s *Server) logoutHandler(c *gin.Context) {
-	session, errGettingState := store.Get(c.Request, "sessionISWP")
+	session, errGettingState := s.store.Get(c.Request, "sessionISWP")
 
 	if errGettingState != nil {
 		fmt.Println(errGettingState)
@@ -44,7 +60,7 @@ func (s *Server) logoutHandler(c *gin.Context) {
 	}
 
 	session.Options.MaxAge = -1
-	session.Values = make(map[interface{}]interface{})
+	session.Values = make(map[any]any)
 	errSaving := session.Save(c.Request, c.Writer)
 	if errSaving != nil {
 		fmt.Println(errSaving)
@@ -62,7 +78,7 @@ func (s *Server) authGoogleCallbackHandler(c *gin.Context) {
 		return
 	}
 
-	session, errGettingState := store.Get(c.Request, "sessionISWP")
+	session, errGettingState := s.store.Get(c.Request, "sessionISWP")
 
 	if errGettingState != nil {
 		fmt.Println(errGettingState)
@@ -75,14 +91,14 @@ func (s *Server) authGoogleCallbackHandler(c *gin.Context) {
 		return
 	}
 
-	token, errExchange := googleOAuthConfig.Exchange(c.Request.Context(), code)
+	token, errExchange := s.googleOAuthConfig.Exchange(c.Request.Context(), code)
 	if errExchange != nil {
 		fmt.Println("errExchange: ", errExchange)
 		http.Error(c.Writer, errExchange.Error(), http.StatusBadRequest)
 		return
 	}
 
-	authClient := googleOAuthConfig.Client(context.Background(), token)
+	authClient := s.googleOAuthConfig.Client(context.Background(), token)
 
 	authRespFromGoogle, errResp := authClient.Get("https://www.googleapis.com/oauth2/v2/userinfo")
 	if errResp != nil {
@@ -111,10 +127,21 @@ func (s *Server) authGoogleCallbackHandler(c *gin.Context) {
 }
 
 func (s *Server) authGoogleHandler(c *gin.Context) {
-	session, errGettingState := store.Get(c.Request, "sessionISWP")
+	userInfo, err := s.getUserInfoFromSession(c)
 
-	if errGettingState != nil {
-		fmt.Println(errGettingState)
+	if err != nil {
+		fmt.Println(err)
+		c.Writer.WriteHeader(500)
+		return
+	} else if userInfo != nil {
+		c.Redirect(http.StatusTemporaryRedirect, "/")
+		return
+	}
+
+	session, err := s.store.Get(c.Request, "sessionISWP")
+
+	if err != nil {
+		fmt.Println(err)
 		c.Writer.WriteHeader(500)
 		return
 	}
@@ -122,9 +149,7 @@ func (s *Server) authGoogleHandler(c *gin.Context) {
 	stateString := url.QueryEscape(rand.Text())
 	session.Values["state"] = stateString
 
-	oAuthReqUrl := googleOAuthConfig.AuthCodeURL(stateString, oauth2.AccessTypeOffline)
-
-	// fmt.Println("oAuthReqUrl:", oAuthReqUrl)
+	oAuthReqUrl := s.googleOAuthConfig.AuthCodeURL(stateString, oauth2.AccessTypeOffline)
 
 	if errSaving := session.Save(c.Request, c.Writer); errSaving != nil {
 		fmt.Println(errSaving)
@@ -136,23 +161,20 @@ func (s *Server) authGoogleHandler(c *gin.Context) {
 func (s *Server) HelloWorldHandler(c *gin.Context) {
 	t, err := template.ParseFiles("./internal/webpages/index.html")
 
-	session, err := store.Get(c.Request, "sessionISWP")
+	userInfo, err := s.getUserInfoFromSession(c)
 	if err != nil {
 		fmt.Println(err)
+		c.Writer.WriteHeader(500)
+		return
 	}
 
-	userInfo := session.Values["userInfo"]
 	if userInfo == nil {
-		fmt.Println("Not Set")
-
-		userInfo = User{
+		userInfo = &User{
 			Name: "Stranger",
 		}
 	}
 
-	if err == nil {
-		t.Execute(c.Writer, userInfo.(User))
-	} else {
-		c.Writer.WriteHeader(500)
+	if err = t.Execute(c.Writer, *userInfo); err != nil {
+		fmt.Println(err)
 	}
 }

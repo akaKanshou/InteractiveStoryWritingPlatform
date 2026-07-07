@@ -1,8 +1,10 @@
 package server
 
 import (
+	"codehopperspeak/internal/db"
 	"encoding/gob"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -10,6 +12,7 @@ import (
 
 	"github.com/gorilla/sessions"
 	_ "github.com/gorilla/sessions"
+	"github.com/jackc/pgx/v5"
 	_ "github.com/joho/godotenv/autoload"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -17,10 +20,15 @@ import (
 
 type Server struct {
 	port int
-}
 
-var store *sessions.CookieStore
-var googleOAuthConfig *oauth2.Config
+	HttpServer *http.Server
+
+	store *sessions.CookieStore
+
+	googleOAuthConfig *oauth2.Config
+
+	PgConn *pgx.Conn
+}
 
 type User struct {
 	Name         string `json:"name"`
@@ -30,22 +38,23 @@ type User struct {
 
 func init() {
 	gob.Register(User{})
-
-	store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_SECRET")))
-	store.MaxAge(86400)
-
-	store.Options.Path = "/"
-	store.Options.HttpOnly = true
-	store.Options.Secure = false
 }
 
-func NewServer() *http.Server {
+func NewServer() *Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
-	NewServer := &Server{
-		port: port,
+
+	conn, err := db.Connect()
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	googleOAuthConfig = &oauth2.Config{
+	NewServer := &Server{
+		port:   port,
+		store:  sessions.NewCookieStore([]byte(os.Getenv("SESSION_SECRET"))),
+		PgConn: conn,
+	}
+
+	NewServer.googleOAuthConfig = &oauth2.Config{
 		ClientID:     os.Getenv("GOOGLE_OAUTH_CLIENTID"),
 		ClientSecret: os.Getenv("GOOGLE_OAUTH_CLIENTSECRET"),
 		RedirectURL:  "https://localhost:8080/auth/google/callback",
@@ -53,8 +62,14 @@ func NewServer() *http.Server {
 		Endpoint:     google.Endpoint,
 	}
 
+	NewServer.store.MaxAge(86400)
+
+	NewServer.store.Options.Path = "/"
+	NewServer.store.Options.HttpOnly = true
+	NewServer.store.Options.Secure = false
+
 	// Declare Server config
-	server := &http.Server{
+	NewServer.HttpServer = &http.Server{
 		Addr:         fmt.Sprintf(":%d", NewServer.port),
 		Handler:      NewServer.RegisterRoutes(),
 		IdleTimeout:  time.Minute,
@@ -62,5 +77,5 @@ func NewServer() *http.Server {
 		WriteTimeout: 30 * time.Second,
 	}
 
-	return server
+	return NewServer
 }

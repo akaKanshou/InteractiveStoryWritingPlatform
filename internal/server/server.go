@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/gorilla/sessions"
-	_ "github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5"
 	_ "github.com/joho/godotenv/autoload"
 	"golang.org/x/oauth2"

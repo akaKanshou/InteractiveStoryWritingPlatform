@@ -27,27 +27,32 @@ func (s *Server) RegisterRoutes() http.Handler {
 	}))
 
 	r.GET("/", s.HelloWorldHandler)
+	r.GET("/login", s.LoginHandler)
 	r.GET("/auth/google", s.authGoogleHandler)
 	r.GET("/auth/google/callback", s.authGoogleCallbackHandler)
 	r.GET("/logout", s.logoutHandler)
 
+	r.Static("/css", "internal/webpages/css")
+	r.Static("/images", "internal/webpages/images")
+	r.Static("/scripts", "internal/webpages/scripts")
+
 	return r
 }
 
-func (s *Server) getUserInfoFromSession(c *gin.Context) (*User, error) {
+func (s *Server) getUserInfoFromSession(c *gin.Context) (User, error) {
 	session, err := s.store.Get(c.Request, "sessionISWP")
 	if err != nil {
 		fmt.Println(err)
-		return nil, err
+		return User{}, err
 	}
 
 	userInfo := session.Values["userInfo"]
 
 	if userInfo == nil {
-		return nil, nil
+		return User{Name: "Stranger"}, nil
 	}
 
-	return userInfo.(*User), nil
+	return userInfo.(User), nil
 }
 
 func (s *Server) logoutHandler(c *gin.Context) {
@@ -133,7 +138,7 @@ func (s *Server) authGoogleHandler(c *gin.Context) {
 		fmt.Println(err)
 		c.Writer.WriteHeader(500)
 		return
-	} else if userInfo != nil {
+	} else if userInfo.Name != "Stranger" {
 		c.Redirect(http.StatusTemporaryRedirect, "/")
 		return
 	}
@@ -168,13 +173,26 @@ func (s *Server) HelloWorldHandler(c *gin.Context) {
 		return
 	}
 
-	if userInfo == nil {
-		userInfo = &User{
-			Name: "Stranger",
-		}
+	if err = t.Execute(c.Writer, userInfo); err != nil {
+		fmt.Println(err)
+	}
+}
+
+func (s *Server) LoginHandler(c *gin.Context) {
+	userInfo, err := s.getUserInfoFromSession(c)
+	if err != nil {
+		fmt.Println(err)
+		c.Writer.WriteHeader(500)
+		return
 	}
 
-	if err = t.Execute(c.Writer, *userInfo); err != nil {
+	if userInfo.Name != "Stranger" {
+		c.Redirect(http.StatusTemporaryRedirect, "/")
+		return
+	}
+
+	t, err := template.ParseFiles("./internal/webpages/login.html")
+	if err = t.Execute(c.Writer, nil); err != nil {
 		fmt.Println(err)
 	}
 }

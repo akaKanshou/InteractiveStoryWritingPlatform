@@ -32,6 +32,8 @@ type User struct {
 	Name         string `json:"name"`
 	Email        string `json:"email"`
 	GoogleUserID string `json:"id"`
+
+	Username string
 }
 
 func init() {

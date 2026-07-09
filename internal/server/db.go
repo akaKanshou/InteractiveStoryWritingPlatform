@@ -25,3 +25,38 @@ func Connect() (*pgx.Conn, error) {
 	fmt.Println("Connected to DB")
 	return conn, nil
 }
+
+func validateUserID(id string) bool {
+	for _, c := range id {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return true
+}
+
+func (s *Server) registerUser(user *User) error {
+	_, err := s.PgConn.Exec(context.Background(),
+		"INSERT INTO users (userName, displayName, email, userID) values ($1, $2, $3, $4)",
+		user.Username, user.Name, user.Email, user.GoogleUserID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Server) getUser(u *User) error {
+	ok := validateUserID(u.GoogleUserID)
+	if !ok {
+		return fmt.Errorf("invalid user id")
+	}
+
+	err := s.PgConn.QueryRow(context.Background(), "SELECT userName, displayName FROM users WHERE id=$1", u.GoogleUserID).Scan(&u.Username, &u.Name)
+	if (err != nil) && (err == pgx.ErrNoRows) {
+		return err
+	}
+
+	return nil
+}

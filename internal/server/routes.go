@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	"golang.org/x/oauth2"
 )
 
@@ -126,6 +127,15 @@ func (s *Server) authGoogleCallbackHandler(c *gin.Context) {
 
 	if errSaving := session.Save(c.Request, c.Writer); errSaving != nil {
 		fmt.Println(errSaving)
+	}
+
+	err := s.getUser(&v)
+	if (err != nil) && (err == pgx.ErrNoRows) {
+		c.Redirect(http.StatusTemporaryRedirect, "/user/create")
+		return
+	} else if err != nil {
+		c.Writer.WriteHeader(500)
+		return
 	}
 
 	c.Redirect(http.StatusTemporaryRedirect, "/")

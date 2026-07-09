@@ -1,7 +1,6 @@
 package server
 
 import (
-	"codehopperspeak/internal/db"
 	"encoding/gob"
 	"fmt"
 	"log"
@@ -42,7 +41,7 @@ func init() {
 func NewServer() *Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
 
-	conn, err := db.Connect()
+	conn, err := Connect()
 	if err != nil {
 		log.Fatal(err)
 	}

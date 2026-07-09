@@ -1,4 +1,4 @@
-package db
+package server
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5"
-	_ "github.com/joho/godotenv/autoload"
 )
 
 func Connect() (*pgx.Conn, error) {

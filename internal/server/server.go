@@ -29,11 +29,11 @@ type Server struct {
 }
 
 type User struct {
-	Name         string `json:"name"`
-	Email        string `json:"email"`
-	GoogleUserID string `json:"id"`
+	Name         string `json:"name" db:"displayName"`
+	Email        string `json:"email" db:"email"`
+	GoogleUserID string `json:"id" db:"userID"`
 
-	Username string
+	Username string `db:"userName"`
 }
 
 func init() {
@@ -62,7 +62,7 @@ func NewServer() *Server {
 		Endpoint:     google.Endpoint,
 	}
 
-	NewServer.store.MaxAge(86400)
+	NewServer.store.MaxAge(7 * 86400)
 
 	NewServer.store.Options.Path = "/"
 	NewServer.store.Options.HttpOnly = true

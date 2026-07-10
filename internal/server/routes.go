@@ -27,11 +27,12 @@ func (s *Server) RegisterRoutes() http.Handler {
 		AllowCredentials: true, // Enable cookies/auth
 	}))
 
-	r.GET("/", s.HelloWorldHandler)
-	r.GET("/login", s.LoginHandler)
+	r.GET("/", s.helloWorldHandler)
+	r.GET("/login", s.loginHandler)
 	r.GET("/auth/google", s.authGoogleHandler)
 	r.GET("/auth/google/callback", s.authGoogleCallbackHandler)
 	r.GET("/logout", s.logoutHandler)
+	r.GET("/user/create", s.userCreateHandler)
 
 	r.Static("/css", "internal/webpages/css")
 	r.Static("/images", "internal/webpages/images")
@@ -138,6 +139,7 @@ func (s *Server) authGoogleCallbackHandler(c *gin.Context) {
 		return
 	}
 
+	session.Values["userInfo"] = v
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
 
@@ -164,6 +166,10 @@ func (s *Server) authGoogleHandler(c *gin.Context) {
 	stateString := url.QueryEscape(rand.Text())
 	session.Values["state"] = stateString
 
+	if c.Query("remember") == "true" {
+		session.Options.MaxAge = 7 * 86400
+	}
+
 	oAuthReqUrl := s.googleOAuthConfig.AuthCodeURL(stateString, oauth2.AccessTypeOffline)
 
 	if errSaving := session.Save(c.Request, c.Writer); errSaving != nil {
@@ -173,7 +179,7 @@ func (s *Server) authGoogleHandler(c *gin.Context) {
 	http.Redirect(c.Writer, c.Request, oAuthReqUrl, http.StatusTemporaryRedirect)
 }
 
-func (s *Server) HelloWorldHandler(c *gin.Context) {
+func (s *Server) helloWorldHandler(c *gin.Context) {
 	t, err := template.ParseFiles("./internal/webpages/index.html")
 
 	userInfo, err := s.getUserInfoFromSession(c)
@@ -188,7 +194,7 @@ func (s *Server) HelloWorldHandler(c *gin.Context) {
 	}
 }
 
-func (s *Server) LoginHandler(c *gin.Context) {
+func (s *Server) loginHandler(c *gin.Context) {
 	userInfo, err := s.getUserInfoFromSession(c)
 	if err != nil {
 		fmt.Println(err)
@@ -204,5 +210,35 @@ func (s *Server) LoginHandler(c *gin.Context) {
 	t, err := template.ParseFiles("./internal/webpages/login.html")
 	if err = t.Execute(c.Writer, nil); err != nil {
 		fmt.Println(err)
+	}
+}
+
+func (s *Server) userCreateHandler(c *gin.Context) {
+	u, err := s.getUserInfoFromSession(c)
+	if err != nil {
+		fmt.Println(err)
+		c.Writer.WriteHeader(500)
+		return
+	}
+
+	if err := s.getUser(&u); (err != nil) && (err != pgx.ErrNoRows) {
+		fmt.Println(err)
+		c.Writer.WriteHeader(500)
+		return
+	} else if err == nil {
+		c.Redirect(http.StatusTemporaryRedirect, "/")
+		return
+	}
+
+	t, err := template.ParseFiles("./internal/webpages/createuser.html")
+	if err != nil {
+		fmt.Println(err)
+		c.Writer.WriteHeader(500)
+		return
+	}
+
+	if err = t.Execute(c.Writer, u); err != nil {
+		fmt.Println(err)
+		return
 	}
 }

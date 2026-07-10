@@ -28,7 +28,7 @@ func Connect() (*pgx.Conn, error) {
 
 func validateUserID(id string) bool {
 	for _, c := range id {
-		if c < '0' || c > '9' {
+		if (c < '0') || (c > '9') {
 			return false
 		}
 	}
@@ -49,12 +49,17 @@ func (s *Server) registerUser(user *User) error {
 
 func (s *Server) getUser(u *User) error {
 	ok := validateUserID(u.GoogleUserID)
+
 	if !ok {
+		fmt.Println("Invalid user ID")
 		return fmt.Errorf("invalid user id")
 	}
 
-	err := s.PgConn.QueryRow(context.Background(), "SELECT userName, displayName FROM users WHERE id=$1", u.GoogleUserID).Scan(&u.Username, &u.Name)
+	err := s.PgConn.QueryRow(context.Background(), `SELECT "userName", "displayName" FROM users WHERE "userID"=$1`, u.GoogleUserID).Scan(&u.Username, &u.Name)
 	if (err != nil) && (err == pgx.ErrNoRows) {
+		return err
+	} else if err != nil {
+		fmt.Println("Error getting user:", u.GoogleUserID, err)
 		return err
 	}
 

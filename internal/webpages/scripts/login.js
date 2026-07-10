@@ -1,3 +1,6 @@
+function sendTo(location) {
+    window.location.href = location
+}
 
 document.getElementById("sign-in-btn").onclick = () => {
     let checkbox = document.getElementById("checkRememberMe")

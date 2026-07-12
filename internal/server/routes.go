@@ -278,5 +278,10 @@ func (s *Server) userRegisterHandler(c *gin.Context) {
 		return
 	}
 
+	if err = s.setUserInfoToSession(c, u); err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	c.Writer.WriteHeader(http.StatusCreated)
 }

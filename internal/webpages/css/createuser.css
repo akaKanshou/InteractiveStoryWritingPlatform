@@ -3,6 +3,10 @@ form {
 	background-color: rgba(var(--bs-dark-rgb), 0.85) !important;
 }
 
+#usernameInput {
+	text-transform: lowercase;
+}
+
 body {
 	font-family: Arial, Helvetica, sans-serif !important;
 	background-image: url("https://localhost:8080/images/niki_emmert-dirt-road-7273240.jpg");

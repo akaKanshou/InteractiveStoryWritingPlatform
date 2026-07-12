@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -35,9 +36,35 @@ func validateUserID(id string) bool {
 	return true
 }
 
+func validateName(name string, minLen, maxLen int, allowSpace bool) error {
+	name = strings.ToLower(name)
+
+	if (len(name) < minLen) || (len(name) > maxLen) {
+		return fmt.Errorf("username must be between %d and %d characters", minLen, maxLen)
+	}
+
+	for _, char := range name {
+		if (char == ' ') && allowSpace {
+			continue
+		}
+
+		if (char >= '0') && (char <= '9') {
+			continue
+		}
+
+		if (char >= 'a') && (char <= 'z') {
+			continue
+		}
+
+		return fmt.Errorf("username contains invalid characters")
+	}
+
+	return nil
+}
+
 func (s *Server) registerUser(user *User) error {
 	_, err := s.PgConn.Exec(context.Background(),
-		"INSERT INTO users (userName, displayName, email, userID) values ($1, $2, $3, $4)",
+		`INSERT INTO users (username, display_name, email, user_id) values ($1, $2, $3, $4)`,
 		user.Username, user.Name, user.Email, user.GoogleUserID)
 
 	if err != nil {
@@ -55,7 +82,7 @@ func (s *Server) getUser(u *User) error {
 		return fmt.Errorf("invalid user id")
 	}
 
-	err := s.PgConn.QueryRow(context.Background(), `SELECT "userName", "displayName" FROM users WHERE "userID"=$1`, u.GoogleUserID).Scan(&u.Username, &u.Name)
+	err := s.PgConn.QueryRow(context.Background(), `SELECT username, display_name FROM users WHERE user_id=$1`, u.GoogleUserID).Scan(&u.Username, &u.Name)
 	if (err != nil) && (err == pgx.ErrNoRows) {
 		return err
 	} else if err != nil {

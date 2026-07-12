@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"golang.org/x/oauth2"
 )
 
@@ -33,28 +35,13 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.GET("/auth/google/callback", s.authGoogleCallbackHandler)
 	r.GET("/logout", s.logoutHandler)
 	r.GET("/user/create", s.userCreateHandler)
+	r.POST("/user/create", s.userRegisterHandler)
 
 	r.Static("/css", "internal/webpages/css")
 	r.Static("/images", "internal/webpages/images")
 	r.Static("/scripts", "internal/webpages/scripts")
 
 	return r
-}
-
-func (s *Server) getUserInfoFromSession(c *gin.Context) (User, error) {
-	session, err := s.store.Get(c.Request, "sessionISWP")
-	if err != nil {
-		fmt.Println(err)
-		return User{}, err
-	}
-
-	userInfo := session.Values["userInfo"]
-
-	if userInfo == nil {
-		return User{Name: "Stranger"}, nil
-	}
-
-	return userInfo.(User), nil
 }
 
 func (s *Server) logoutHandler(c *gin.Context) {
@@ -241,4 +228,55 @@ func (s *Server) userCreateHandler(c *gin.Context) {
 		fmt.Println(err)
 		return
 	}
+}
+
+func (s *Server) userRegisterHandler(c *gin.Context) {
+	u, err := s.getUserInfoFromSession(c)
+	if err != nil {
+		fmt.Println(err)
+		c.Writer.WriteHeader(500)
+		return
+	}
+
+	username, displayname := c.PostForm("username"), c.PostForm("displayname")
+
+	if err = validateName(username, 3, 18, false); err != nil {
+		fmt.Println(err)
+		c.Writer.WriteHeader(http.StatusBadRequest)
+		if _, err = c.Writer.WriteString(err.Error()); err != nil {
+			fmt.Println(err)
+		}
+		return
+	}
+
+	if err = validateName(displayname, 1, 26, true); err != nil {
+		fmt.Println(err)
+		c.Writer.WriteHeader(http.StatusBadRequest)
+		if _, err = c.Writer.WriteString(err.Error()); err != nil {
+			fmt.Println(err)
+		}
+		return
+	}
+
+	u.Username = username
+	u.Name = displayname
+
+	err = s.registerUser(&u)
+	if err != nil {
+		if pgErr, ok := errors.AsType[*pgconn.PgError](err); ok {
+			fmt.Println(pgErr.Message)
+			fmt.Println(pgErr.Code)
+		} else {
+			fmt.Println(err)
+		}
+
+		c.Writer.WriteHeader(http.StatusInternalServerError)
+		if _, err = c.Writer.WriteString(err.Error()); err != nil {
+			fmt.Println(err)
+		}
+
+		return
+	}
+
+	c.Writer.WriteHeader(http.StatusCreated)
 }

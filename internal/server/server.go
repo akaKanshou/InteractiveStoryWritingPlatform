@@ -28,14 +28,6 @@ type Server struct {
 	PgConn *pgx.Conn
 }
 
-type User struct {
-	Name         string `json:"name" db:"displayName"`
-	Email        string `json:"email" db:"email"`
-	GoogleUserID string `json:"id" db:"userID"`
-
-	Username string `db:"userName"`
-}
-
 func init() {
 	gob.Register(User{})
 }

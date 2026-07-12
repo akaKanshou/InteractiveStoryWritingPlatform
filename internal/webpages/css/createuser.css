@@ -3,8 +3,13 @@ form {
 	background-color: rgba(var(--bs-dark-rgb), 0.85) !important;
 }
 
+#errorBox{
+	color: rgb(var(--bs-danger-rgb));
+}
+
 #usernameInput {
 	text-transform: lowercase;
+	border-color: rgb(var(--bs-light-rgb));
 }
 
 body {

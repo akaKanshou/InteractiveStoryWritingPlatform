@@ -240,7 +240,7 @@ func (s *Server) userRegisterHandler(c *gin.Context) {
 
 	username, displayname := c.PostForm("username"), c.PostForm("displayname")
 
-	if err = validateName(username, 3, 18, false); err != nil {
+	if err = validateName("Username", username, 3, 18, false); err != nil {
 		fmt.Println(err)
 		c.Writer.WriteHeader(http.StatusBadRequest)
 		if _, err = c.Writer.WriteString(err.Error()); err != nil {
@@ -249,7 +249,7 @@ func (s *Server) userRegisterHandler(c *gin.Context) {
 		return
 	}
 
-	if err = validateName(displayname, 1, 26, true); err != nil {
+	if err = validateName("Display name", displayname, 1, 26, true); err != nil {
 		fmt.Println(err)
 		c.Writer.WriteHeader(http.StatusBadRequest)
 		if _, err = c.Writer.WriteString(err.Error()); err != nil {

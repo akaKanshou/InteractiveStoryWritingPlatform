@@ -57,14 +57,14 @@
 		<main
 			class="form-signin w-100 m-auto d-flex justify-content-around flex-row text-center my-5"
 		>
-			<form class="d-flex flex-column align-items-center rounded-4 py-4 my-4">
+			<form class="d-flex flex-column align-items-center rounded-4 py-4">
 				<img
-					class="mb-4 filterWhite"
+					class="mb-2 filterWhite"
 					src="https://localhost:8080/images/noun-game-ui-anvil-forge-2360111.svg"
 					alt=""
 					height="80"
 				/>
-				<h1 class="h3 mb-3 fw-normal">Create User</h1>
+				<h1 class="h3 mb-2 fw-normal">Create User</h1>
 
 				<div class="px-5 w-100">
 					<div class="form-group mb-2">
@@ -93,11 +93,14 @@
 						>
 					</div>
 
-					<div class="d-flex justify-content-center">
-						<button type="button" class="btn btn-outline-light m-3" onclick="checkAndSubmit()">
-							Submit
-						</button>
+
+					<div id="errorBox" hidden class="mt-3 p-2 border border-2 border-danger rounded-2">
+						Here is your error
 					</div>
+
+					<button type="button" class="btn btn-outline-light m-3" onclick="checkAndSubmit()">
+						Submit
+					</button>
 				</div>
 			</form>
 		</main>

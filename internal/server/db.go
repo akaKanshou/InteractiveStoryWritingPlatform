@@ -36,11 +36,11 @@ func validateUserID(id string) bool {
 	return true
 }
 
-func validateName(name string, minLen, maxLen int, allowSpace bool) error {
+func validateName(field, name string, minLen, maxLen int, allowSpace bool) error {
 	name = strings.ToLower(name)
 
 	if (len(name) < minLen) || (len(name) > maxLen) {
-		return fmt.Errorf("username must be between %d and %d characters", minLen, maxLen)
+		return fmt.Errorf("%v must be between %d and %d characters", field, minLen, maxLen)
 	}
 
 	for _, char := range name {
@@ -56,7 +56,7 @@ func validateName(name string, minLen, maxLen int, allowSpace bool) error {
 			continue
 		}
 
-		return fmt.Errorf("username contains invalid characters")
+		return fmt.Errorf("%v contains invalid characters", field)
 	}
 
 	return nil

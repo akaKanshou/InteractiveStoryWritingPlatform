@@ -2,13 +2,21 @@ function sendTo(location) {
     window.location.href = location
 }
 
-function check(min, max) {
+function showError(errorString) {
+    const errBox = document.getElementById("errorBox")
+    if (!errBox) return
+
+    errBox.textContent=errorString
+    errBox.hidden=false
+}
+
+function checkUsername() {
     let input = document.getElementById("usernameInput")
     if (!input) return false
 
     let str = input.value.toLowerCase()
-    if ((str.length < min) || (str.length > max)) {
-        console.log("Username should be 3-18 characters long")
+    if ((str.length < 3) || (str.length > 18)) {
+        showError(`Username should be 3 to 18 characters long`)
         return false
     }
 
@@ -21,7 +29,37 @@ function check(min, max) {
             continue
         }
 
-        console.log("Username contains invalid characters")
+        showError("Username contains invalid characters")
+        return false
+    }
+
+    return true
+}
+
+function checkDisplayName() {
+    let input = document.getElementById("displayName")
+    if (!input) return false
+
+    let str = input.value.toLowerCase()
+    if ((str.length < 1) || (str.length > 26)) {
+        showError(`Username should be 1 to 26 characters long`)
+        return false
+    }
+
+    for (let char in str) {
+        if (char === ' ') {
+            continue
+        }
+
+        if ((char >= '0') && (char <= '9')) {
+            continue
+        }
+
+        if ((char >= 'a') && (char <= 'z')) {
+            continue
+        }
+
+        showError("Display name contains invalid characters")
         return false
     }
 
@@ -29,8 +67,8 @@ function check(min, max) {
 }
 
 async function checkAndSubmit() {
-    if (!check(3, 18)) return
-    if (!check(1, 26)) return
+    if (!checkUsername()) return
+    if (!checkDisplayName()) return
 
     const formData = new FormData()
     formData.append("username", document.getElementById("usernameInput").value.toLowerCase())
@@ -43,9 +81,9 @@ async function checkAndSubmit() {
 
     const resp = await fetch(req)
     if (resp.status === 201) {
-        console.log("registered")
+        sendTo("https://localhost:8080/")
     } else {
         const errString = await resp.text()
-        console.log(errString)
+        showError(errString)
     }
 }

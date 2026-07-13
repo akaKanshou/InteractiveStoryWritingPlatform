@@ -1,20 +1,15 @@
 package server
 
 import (
-	"context"
-	"crypto/rand"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
-	"net/url"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"golang.org/x/oauth2"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
@@ -30,11 +25,15 @@ func (s *Server) RegisterRoutes() http.Handler {
 	}))
 
 	r.GET("/", s.helloWorldHandler)
+
 	r.GET("/login", s.loginHandler)
 	r.GET("/auth/google", s.authGoogleHandler)
 	r.GET("/auth/google/callback", s.authGoogleCallbackHandler)
 	r.GET("/logout", s.logoutHandler)
+
 	r.GET("/user/create", s.userCreateHandler)
+	r.GET("/user/dashboard", s.userDashboardHandler)
+
 	r.POST("/user/create", s.userRegisterHandler)
 
 	r.Static("/css", "webpages/css")
@@ -72,10 +71,10 @@ func (s *Server) authGoogleCallbackHandler(c *gin.Context) {
 		return
 	}
 
-	session, errGettingState := s.store.Get(c.Request, "sessionISWP")
+	session, err := s.store.Get(c.Request, "sessionISWP")
 
-	if errGettingState != nil {
-		fmt.Println(errGettingState)
+	if err != nil {
+		fmt.Println(err)
 		c.Writer.WriteHeader(500)
 		return
 	}
@@ -85,40 +84,22 @@ func (s *Server) authGoogleCallbackHandler(c *gin.Context) {
 		return
 	}
 
-	token, errExchange := s.googleOAuthConfig.Exchange(c.Request.Context(), code)
-	if errExchange != nil {
-		fmt.Println("errExchange: ", errExchange)
-		http.Error(c.Writer, errExchange.Error(), http.StatusBadRequest)
-		return
-	}
-
-	authClient := s.googleOAuthConfig.Client(context.Background(), token)
-
-	authRespFromGoogle, errResp := authClient.Get("https://www.googleapis.com/oauth2/v2/userinfo")
-	if errResp != nil {
-		fmt.Println("errResp: ", errResp)
-		c.Writer.WriteHeader(500)
-		return
-	}
-
-	defer authRespFromGoogle.Body.Close()
-
-	var v User
-	errDecoding := json.NewDecoder(authRespFromGoogle.Body).Decode(&v)
-	if errDecoding != nil {
-		fmt.Println("errDecoding", errDecoding)
+	v, err := s.exchangeTokenForUser(code, c)
+	if err != nil {
+		fmt.Println(err)
 		c.Writer.WriteHeader(500)
 		return
 	}
 
 	session.Values["userInfo"] = v
-
-	if errSaving := session.Save(c.Request, c.Writer); errSaving != nil {
-		fmt.Println(errSaving)
+	if err := session.Save(c.Request, c.Writer); err != nil {
+		fmt.Println(err)
+		c.Writer.WriteHeader(500)
+		return
 	}
 
-	err := s.getUser(&v)
-	if (err != nil) && (err == pgx.ErrNoRows) {
+	err = s.getUser(&v)
+	if (err != nil) && errors.Is(err, pgx.ErrNoRows) {
 		c.Redirect(http.StatusTemporaryRedirect, "/user/create")
 		return
 	} else if err != nil {
@@ -127,6 +108,12 @@ func (s *Server) authGoogleCallbackHandler(c *gin.Context) {
 	}
 
 	session.Values["userInfo"] = v
+	if err := session.Save(c.Request, c.Writer); err != nil {
+		fmt.Println(err)
+		c.Writer.WriteHeader(500)
+		return
+	}
+
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
 
@@ -137,30 +124,19 @@ func (s *Server) authGoogleHandler(c *gin.Context) {
 		fmt.Println(err)
 		c.Writer.WriteHeader(500)
 		return
-	} else if userInfo.Name != "Stranger" {
+	} else if userInfo.getState(AuthDB) {
 		c.Redirect(http.StatusTemporaryRedirect, "/")
+		return
+	} else if userInfo.getState(AuthGoogle) {
+		c.Redirect(http.StatusTemporaryRedirect, "/user/create")
 		return
 	}
 
-	session, err := s.store.Get(c.Request, "sessionISWP")
-
+	oAuthReqUrl, err := s.setAuthSession(c)
 	if err != nil {
 		fmt.Println(err)
 		c.Writer.WriteHeader(500)
 		return
-	}
-
-	stateString := url.QueryEscape(rand.Text())
-	session.Values["state"] = stateString
-
-	if c.Query("remember") == "true" {
-		session.Options.MaxAge = 7 * 86400
-	}
-
-	oAuthReqUrl := s.googleOAuthConfig.AuthCodeURL(stateString, oauth2.AccessTypeOffline)
-
-	if errSaving := session.Save(c.Request, c.Writer); errSaving != nil {
-		fmt.Println(errSaving)
 	}
 
 	http.Redirect(c.Writer, c.Request, oAuthReqUrl, http.StatusTemporaryRedirect)
@@ -189,7 +165,7 @@ func (s *Server) loginHandler(c *gin.Context) {
 		return
 	}
 
-	if userInfo.Name != "Stranger" {
+	if userInfo.getState(AuthDB) {
 		c.Redirect(http.StatusTemporaryRedirect, "/")
 		return
 	}
@@ -274,4 +250,8 @@ func (s *Server) userRegisterHandler(c *gin.Context) {
 	}
 
 	c.Writer.WriteHeader(http.StatusCreated)
+}
+
+func (s *Server) userDashboardHandler(c *gin.Context) {
+
 }

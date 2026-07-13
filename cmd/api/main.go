@@ -12,6 +12,8 @@ import (
 	"codehopperspeak/internal/server"
 )
 
+//TODO: Add error types
+
 func gracefulShutdown(apiServer *server.Server, done chan bool) {
 	// Create context that listens for the interrupt signal from the OS.
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)

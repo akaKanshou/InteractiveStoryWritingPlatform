@@ -1,78 +1,57 @@
 function sendTo(location) {
-    window.location.href = location
+    window.location.href = `https://localhost:8080${location}`
 }
 
+
 function showError(errorString) {
-    const errBox = document.getElementById("errorBox")
+    const errBox = document.getElementById("usernameErrors")
     if (!errBox) return
 
-    errBox.textContent=errorString
-    errBox.hidden=false
+    for (let i = 0; i < errorString.length; i++) {
+        const li = document.createElement("li");
+        li.textContent = errorString[i];
+        errBox.appendChild(li);
+    }
+
+    errBox.classList.add('visible');
+}
+
+function clearError() {
+    const errBox = document.getElementById("usernameErrors")
+    if (!errBox) return
+
+    errBox.innerHTML = ""
+
+    errBox.classList.remove('visible');
 }
 
 function checkUsername() {
-    let input = document.getElementById("usernameInput")
-    if (!input) return false
-
-    let str = input.value.toLowerCase()
-    if ((str.length < 3) || (str.length > 18)) {
-        showError(`Username should be 3 to 18 characters long`)
-        return false
+    const username = document.getElementById("regUsername").value.toLowerCase()
+    if (/^[a-z0-9_]{3,18}$/.test(username)) {
+        return true
     }
 
-    for (let char in str) {
-        if ((char >= '0') && (char <= '9')) {
-            continue
-        }
+    let errString = []
 
-        if ((char >= 'a') && (char <= 'z')) {
-            continue
-        }
-
-        showError("Username contains invalid characters")
-        return false
+    if (!/^[a-z0-9_]$/.test(username)) {
+        errString.push("Username must only contain numbers, letters and underscores.")
     }
 
-    return true
-}
-
-function checkDisplayName() {
-    let input = document.getElementById("displayName")
-    if (!input) return false
-
-    let str = input.value.toLowerCase()
-    if ((str.length < 1) || (str.length > 26)) {
-        showError(`Username should be 1 to 26 characters long`)
-        return false
+    if (!/^.{3,18}$/.test(username)) {
+        errString.push("Username must be 3 to 18 characters long.")
     }
 
-    for (let char in str) {
-        if (char === ' ') {
-            continue
-        }
+    showError(errString)
 
-        if ((char >= '0') && (char <= '9')) {
-            continue
-        }
-
-        if ((char >= 'a') && (char <= 'z')) {
-            continue
-        }
-
-        showError("Display name contains invalid characters")
-        return false
-    }
-
-    return true
+    return false
 }
 
 async function checkAndSubmit() {
+    clearError()
     if (!checkUsername()) return
-    if (!checkDisplayName()) return
 
     const formData = new FormData()
-    formData.append("username", document.getElementById("usernameInput").value.toLowerCase())
-    formData.append("displayname", document.getElementById("displayName").value)
+    formData.append("username", document.getElementById("regUsername").value.toLowerCase())
 
     const req = new Request("https://localhost:8080/user/create", {
         method: "POST",
@@ -81,9 +60,31 @@ async function checkAndSubmit() {
 
     const resp = await fetch(req)
     if (resp.status === 201) {
-        sendTo("https://localhost:8080/")
+        sendTo("/")
     } else {
         const errString = await resp.text()
-        showError(errString)
+        showError([errString])
     }
 }
+
+
+addEventListener('DOMContentLoaded', () => {
+    // Creating particles
+    const count = 20;
+    const heroParticles = document.getElementById('heroParticles');
+    for (let i = 0; i < count; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = (80 + Math.random() * 30) + '%';
+        particle.style.animationDuration = (8 + Math.random() * 15) + 's';
+        particle.style.animationDelay = Math.random() * 10 + 's';
+        heroParticles.appendChild(particle);
+    }
+
+    // Setting on click
+    const submitBtn = document.getElementById("registerSubmit")
+    if (submitBtn) {
+        submitBtn.addEventListener('click', checkAndSubmit)
+    }
+})

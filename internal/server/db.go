@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/jackc/pgx/v5"
@@ -36,30 +37,12 @@ func validateUserID(id string) bool {
 	return true
 }
 
-func validateName(field, name string, minLen, maxLen int, allowSpace bool) error {
+func validateUsername(name string) error {
 	name = strings.ToLower(name)
 
-	if (len(name) < minLen) || (len(name) > maxLen) {
-		return fmt.Errorf("%v must be between %d and %d characters", field, minLen, maxLen)
-	}
+	_, err := regexp.Match("^[a-z0-9_]{3,18}", []byte(name))
 
-	for _, char := range name {
-		if (char == ' ') && allowSpace {
-			continue
-		}
-
-		if (char >= '0') && (char <= '9') {
-			continue
-		}
-
-		if (char >= 'a') && (char <= 'z') {
-			continue
-		}
-
-		return fmt.Errorf("%v contains invalid characters", field)
-	}
-
-	return nil
+	return err
 }
 
 func (s *Server) registerUser(user *User) error {

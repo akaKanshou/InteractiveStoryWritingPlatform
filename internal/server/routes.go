@@ -238,18 +238,9 @@ func (s *Server) userRegisterHandler(c *gin.Context) {
 		return
 	}
 
-	username, displayname := c.PostForm("username"), c.PostForm("displayname")
+	username := c.PostForm("username")
 
-	if err = validateName("Username", username, 3, 18, false); err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusBadRequest)
-		if _, err = c.Writer.WriteString(err.Error()); err != nil {
-			fmt.Println(err)
-		}
-		return
-	}
-
-	if err = validateName("Display name", displayname, 1, 26, true); err != nil {
+	if err = validateUsername(username); err != nil {
 		fmt.Println(err)
 		c.Writer.WriteHeader(http.StatusBadRequest)
 		if _, err = c.Writer.WriteString(err.Error()); err != nil {
@@ -259,7 +250,6 @@ func (s *Server) userRegisterHandler(c *gin.Context) {
 	}
 
 	u.Username = username
-	u.Name = displayname
 
 	err = s.registerUser(&u)
 	if err != nil {

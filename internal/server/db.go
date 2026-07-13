@@ -65,7 +65,7 @@ func (s *Server) getUser(u *User) error {
 		return fmt.Errorf("invalid user id")
 	}
 
-	err := s.PgConn.QueryRow(context.Background(), `SELECT username, display_name FROM users WHERE user_id=$1`, u.GoogleUserID).Scan(&u.Username, &u.Name)
+	err := s.PgConn.QueryRow(context.Background(), `SELECT username FROM users WHERE user_id=$1`, u.GoogleUserID).Scan(&u.Username)
 	if (err != nil) && (err == pgx.ErrNoRows) {
 		return err
 	} else if err != nil {

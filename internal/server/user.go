@@ -6,12 +6,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	AuthGoogle int8 = iota
+	AuthDB
+)
+
 type User struct {
 	Name         string `json:"name" db:"display_name"`
 	Email        string `json:"email" db:"email"`
 	GoogleUserID string `json:"id" db:"user_id"`
+	Username     string `db:"username"`
 
-	Username string `db:"username"`
+	AuthState int8
 }
 
 func (s *Server) getUserInfoFromSession(c *gin.Context) (User, error) {
@@ -42,6 +48,10 @@ func (s *Server) setUserInfoToSession(c *gin.Context, u User) error {
 		fmt.Println(err)
 		return err
 	}
-	
+
 	return nil
+}
+
+func (v User) getState(state int8) bool {
+	return v.AuthState&state > 0
 }

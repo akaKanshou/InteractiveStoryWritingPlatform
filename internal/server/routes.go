@@ -37,9 +37,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.GET("/user/create", s.userCreateHandler)
 	r.POST("/user/create", s.userRegisterHandler)
 
-	r.Static("/css", "internal/webpages/css")
-	r.Static("/images", "internal/webpages/images")
-	r.Static("/scripts", "internal/webpages/scripts")
+	r.Static("/css", "webpages/css")
+	r.Static("/images", "webpages/images")
+	r.Static("/scripts", "webpages/scripts")
 
 	return r
 }
@@ -167,7 +167,7 @@ func (s *Server) authGoogleHandler(c *gin.Context) {
 }
 
 func (s *Server) helloWorldHandler(c *gin.Context) {
-	t, err := template.ParseFiles("./internal/webpages/index.html")
+	t, err := template.ParseFiles("./webpages/index.html")
 
 	userInfo, err := s.getUserInfoFromSession(c)
 	if err != nil {
@@ -194,7 +194,7 @@ func (s *Server) loginHandler(c *gin.Context) {
 		return
 	}
 
-	t, err := template.ParseFiles("./internal/webpages/login.html")
+	t, err := template.ParseFiles("./webpages/login.html")
 	if err = t.Execute(c.Writer, nil); err != nil {
 		fmt.Println(err)
 	}
@@ -217,7 +217,7 @@ func (s *Server) userCreateHandler(c *gin.Context) {
 		return
 	}
 
-	t, err := template.ParseFiles("./internal/webpages/createuser.html")
+	t, err := template.ParseFiles("./webpages/createuser.html")
 	if err != nil {
 		fmt.Println(err)
 		c.Writer.WriteHeader(500)

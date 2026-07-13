@@ -1,7 +1,8 @@
 <?php
 
-require "database/connection.php";
+require_once "database/config.php";
+require_once "database/connection.php";
 
-echo "Database Connected Successfully";
-
-?>
+echo "<h1>".APP_NAME."</h1>";
+echo "<br>";
+echo "Database Connected Successfully!";

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Create User</title>
+		<link
+			href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+			rel="stylesheet"
+			integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+			crossorigin="anonymous"
+		/>
+		<link href="https://localhost:8080/css/createuser.css" rel="stylesheet" />
+	</head>
+	<body>
+		<header class="p-4 text-bg-dark shadow-lg" id="topheader">
+			<div class="container">
+				<div
+					class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start"
+				>
+					<a
+						href="/"
+						class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none"
+					>
+						<img
+							id="HeaderLogo"
+							class="bi me-4 filterWhite"
+							height="40"
+							aria-label="ForgeVerse"
+							alt="ForgeVerse Logo"
+							src="https://localhost:8080/images/noun-game-ui-anvil-forge-2360111.svg"
+						/>
+					</a>
+					<ul
+						class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0"
+					>
+						<li><a href="/" class="nav-link px-2 text-secondary">Home</a></li>
+						<li>
+							<a href="/explore" class="nav-link px-2 text-white">Explore</a>
+						</li>
+						<li><a href="/write" class="nav-link px-2 text-white">Write</a></li>
+					</ul>
+
+					<div class="text-end">
+						<button
+							type="button"
+							class="btn btn-outline-light me-2"
+							onclick="sendTo('https://localhost:8080/login')"
+						>
+							Login
+						</button>
+					</div>
+				</div>
+			</div>
+		</header>
+
+		<main
+			class="form-signin w-100 m-auto d-flex justify-content-around flex-row text-center my-5"
+		>
+			<form class="d-flex flex-column align-items-center rounded-4 py-4 my-4">
+				<img
+					class="mb-4 filterWhite"
+					src="https://localhost:8080/images/noun-game-ui-anvil-forge-2360111.svg"
+					alt=""
+					height="80"
+				/>
+				<h1 class="h3 mb-3 fw-normal">Create User</h1>
+
+				<div class="px-5 w-100">
+					<div class="form-group mb-2">
+						<label for="usernameInput" class="my-1">Username</label>
+						<input
+							type="text"
+							class="form-control my-1"
+							id="usernameInput"
+							placeholder="Username"
+						/>
+						<small id="usernameInstr" class="form-text my-1"
+							>Choose a unique username for your url.</small
+						>
+					</div>
+					<div class="form-group">
+						<label for="displayName" class="my-1">Display Name</label>
+						<input
+							type="text"
+							class="form-control my-1"
+							id="displayName"
+							placeholder="Display name"
+							value="{{printf .Name}}"
+						/>
+						<small id="displayNameInstr" class="form-text my-1"
+							>Choose a name for your public profile.</small
+						>
+					</div>
+
+					<div class="d-flex justify-content-center">
+						<button type="button" class="btn btn-outline-light m-3" onclick="checkAndSubmit()">
+							Submit
+						</button>
+					</div>
+				</div>
+			</form>
+		</main>
+
+		<script
+			src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+			integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+			crossorigin="anonymous"
+		></script>
+
+		<script src="https://localhost:8080/scripts/createuser.js"></script>
+	</body>
+</html>

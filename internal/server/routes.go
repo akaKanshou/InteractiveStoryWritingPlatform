@@ -12,6 +12,9 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
+// TODO: group /user URLS to auto check AuthDB
+// TODO: change /user/create to /register
+
 func (s *Server) RegisterRoutes() http.Handler {
 	r := gin.New()
 
@@ -43,20 +46,37 @@ func (s *Server) RegisterRoutes() http.Handler {
 	return r
 }
 
-func (s *Server) logoutHandler(c *gin.Context) {
-	session, errGettingState := s.store.Get(c.Request, "sessionISWP")
+func execTemplate(c *gin.Context, data any, filenames ...string) error {
+	t, err := template.ParseFiles(filenames...)
+	if err != nil {
+		return err
+	}
 
-	if errGettingState != nil {
-		fmt.Println(errGettingState)
-		c.Writer.WriteHeader(500)
+	err = t.Execute(c.Writer, data)
+	if err != nil {
+		c.Writer.WriteHeader(http.StatusInternalServerError)
+		return err
+	}
+
+	return nil
+}
+
+func (s *Server) logoutHandler(c *gin.Context) {
+	session, err := s.store.Get(c.Request, "sessionISWP")
+
+	if err != nil {
+		fmt.Println(err)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	session.Options.MaxAge = -1
 	session.Values = make(map[any]any)
-	errSaving := session.Save(c.Request, c.Writer)
-	if errSaving != nil {
-		fmt.Println(errSaving)
+	err = session.Save(c.Request, c.Writer)
+	if err != nil {
+		fmt.Println(err)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	c.Redirect(http.StatusTemporaryRedirect, "/")
@@ -75,7 +95,7 @@ func (s *Server) authGoogleCallbackHandler(c *gin.Context) {
 
 	if err != nil {
 		fmt.Println(err)
-		c.Writer.WriteHeader(500)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -87,14 +107,14 @@ func (s *Server) authGoogleCallbackHandler(c *gin.Context) {
 	v, err := s.exchangeTokenForUser(code, c)
 	if err != nil {
 		fmt.Println(err)
-		c.Writer.WriteHeader(500)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	session.Values["userInfo"] = v
 	if err := session.Save(c.Request, c.Writer); err != nil {
 		fmt.Println(err)
-		c.Writer.WriteHeader(500)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -103,14 +123,14 @@ func (s *Server) authGoogleCallbackHandler(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "/user/create")
 		return
 	} else if err != nil {
-		c.Writer.WriteHeader(500)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	session.Values["userInfo"] = v
 	if err := session.Save(c.Request, c.Writer); err != nil {
 		fmt.Println(err)
-		c.Writer.WriteHeader(500)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -122,7 +142,7 @@ func (s *Server) authGoogleHandler(c *gin.Context) {
 
 	if err != nil {
 		fmt.Println(err)
-		c.Writer.WriteHeader(500)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
 	} else if userInfo.getState(AuthDB) {
 		c.Redirect(http.StatusTemporaryRedirect, "/")
@@ -135,7 +155,7 @@ func (s *Server) authGoogleHandler(c *gin.Context) {
 	oAuthReqUrl, err := s.setAuthSession(c)
 	if err != nil {
 		fmt.Println(err)
-		c.Writer.WriteHeader(500)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -143,16 +163,14 @@ func (s *Server) authGoogleHandler(c *gin.Context) {
 }
 
 func (s *Server) helloWorldHandler(c *gin.Context) {
-	t, err := template.ParseFiles("./webpages/index.html")
-
 	userInfo, err := s.getUserInfoFromSession(c)
 	if err != nil {
 		fmt.Println(err)
-		c.Writer.WriteHeader(500)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	if err = t.Execute(c.Writer, userInfo); err != nil {
+	if err = execTemplate(c, userInfo, "webpages/index.html"); err != nil {
 		fmt.Println(err)
 	}
 }
@@ -161,17 +179,19 @@ func (s *Server) loginHandler(c *gin.Context) {
 	userInfo, err := s.getUserInfoFromSession(c)
 	if err != nil {
 		fmt.Println(err)
-		c.Writer.WriteHeader(500)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	if userInfo.getState(AuthDB) {
+	if userInfo.getState(AuthGoogle) && userInfo.getState(AuthDB) {
 		c.Redirect(http.StatusTemporaryRedirect, "/")
 		return
+	} else if userInfo.getState(AuthGoogle) {
+		c.Redirect(http.StatusTemporaryRedirect, "/user/create")
+		return
 	}
 
-	t, err := template.ParseFiles("./webpages/login.html")
-	if err = t.Execute(c.Writer, nil); err != nil {
+	if err = execTemplate(c, userInfo, "webpages/login.html"); err != nil {
 		fmt.Println(err)
 	}
 }
@@ -180,29 +200,18 @@ func (s *Server) userCreateHandler(c *gin.Context) {
 	u, err := s.getUserInfoFromSession(c)
 	if err != nil {
 		fmt.Println(err)
-		c.Writer.WriteHeader(500)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	if err := s.getUser(&u); (err != nil) && (err != pgx.ErrNoRows) {
-		fmt.Println(err)
-		c.Writer.WriteHeader(500)
-		return
-	} else if err == nil {
+	if u.getState(AuthDB) {
 		c.Redirect(http.StatusTemporaryRedirect, "/")
-		return
+	} else if !u.getState(AuthGoogle) {
+		c.Redirect(http.StatusTemporaryRedirect, "/login")
 	}
 
-	t, err := template.ParseFiles("./webpages/createuser.html")
-	if err != nil {
+	if err = execTemplate(c, u, "webpages/createuser.html"); err != nil {
 		fmt.Println(err)
-		c.Writer.WriteHeader(500)
-		return
-	}
-
-	if err = t.Execute(c.Writer, u); err != nil {
-		fmt.Println(err)
-		return
 	}
 }
 
@@ -210,8 +219,14 @@ func (s *Server) userRegisterHandler(c *gin.Context) {
 	u, err := s.getUserInfoFromSession(c)
 	if err != nil {
 		fmt.Println(err)
-		c.Writer.WriteHeader(500)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
+	}
+
+	if u.getState(AuthDB) {
+		c.Redirect(http.StatusTemporaryRedirect, "/")
+	} else if !u.getState(AuthGoogle) {
+		c.Redirect(http.StatusTemporaryRedirect, "/login")
 	}
 
 	username := c.PostForm("username")
@@ -246,6 +261,7 @@ func (s *Server) userRegisterHandler(c *gin.Context) {
 
 	if err = s.setUserInfoToSession(c, u); err != nil {
 		fmt.Println(err)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -253,5 +269,19 @@ func (s *Server) userRegisterHandler(c *gin.Context) {
 }
 
 func (s *Server) userDashboardHandler(c *gin.Context) {
+	u, err := s.getUserInfoFromSession(c)
+	if err != nil {
+		fmt.Println(err)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
+	if !(u.getState(AuthGoogle) && u.getState(AuthDB)) {
+		c.Redirect(http.StatusTemporaryRedirect, "/login")
+	}
+
+	err = execTemplate(c, u, "webpages/dashboard.html")
+	if err != nil {
+		fmt.Println(err)
+	}
 }

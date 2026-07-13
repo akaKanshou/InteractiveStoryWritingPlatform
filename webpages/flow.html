@@ -1,29 +1,11 @@
-<?php
-
-session_start();
-
-if (!isset($_SESSION['user_id'])) {
-    header('Location: authenticate.php');
-    exit;
-}
-
-$storyId = isset($_GET['story_id']) ? intval($_GET['story_id']) : 0;
-if ($storyId === 0) {
-    header('Location: dashboard.php');
-    exit;
-}
-
-$username = htmlspecialchars($_SESSION['username'] ?? 'Writer');
-$userId = $_SESSION['user_id'];
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Story Graph — ForgeVerse</title>
-    <link rel="stylesheet" href="../assets/css/global.css">
-    <link rel="stylesheet" href="../assets/css/graph.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="https://localhost:8080/css/global.css">
+    <link rel="stylesheet" href="https://localhost:8080/css/graph.css">
 </head>
 <body>
     
@@ -124,12 +106,6 @@ $userId = $_SESSION['user_id'];
         </div>
     </div>
 
-    <script>
-        window.ForgeVerse = {
-            userId: <?php echo json_encode($userId); ?>,
-            storyId: <?php echo json_encode($storyId); ?>
-        };
-    </script>
-    <script src="../assets/js/graph.js?v=<?php echo time(); ?>"></script>
+    <script src="https://localhost:8080/scripts/graph.js"></script>
 </body>
 </html>

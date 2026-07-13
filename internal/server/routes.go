@@ -34,6 +34,12 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.GET("/auth/google/callback", s.authGoogleCallbackHandler)
 	r.GET("/logout", s.logoutHandler)
 
+	r.GET("/user/flow", func(c *gin.Context) {
+		if err := execTemplate(c, nil, "webpages/flow.html"); err != nil {
+			fmt.Println(err)
+		}
+	})
+
 	r.GET("/user/create", s.userCreateHandler)
 	r.GET("/user/dashboard", s.userDashboardHandler)
 

@@ -73,5 +73,6 @@ func (s *Server) getUser(u *User) error {
 		return err
 	}
 
+	u.AuthState |= AuthDB
 	return nil
 }

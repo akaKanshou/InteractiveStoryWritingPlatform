@@ -7,8 +7,9 @@ import (
 )
 
 const (
-	AuthGoogle int8 = iota
-	AuthDB
+	AuthGoogle uint8 = 0x1
+	AuthDB     uint8 = 0x2
+	AuthAny    uint8 = 0xFF
 )
 
 type User struct {
@@ -17,7 +18,7 @@ type User struct {
 	GoogleUserID string `json:"id" db:"user_id"`
 	Username     string `db:"username"`
 
-	AuthState int8
+	AuthState uint8
 }
 
 func (s *Server) getUserInfoFromSession(c *gin.Context) (User, error) {
@@ -52,6 +53,6 @@ func (s *Server) setUserInfoToSession(c *gin.Context, u User) error {
 	return nil
 }
 
-func (v User) getState(state int8) bool {
+func (v User) getState(state uint8) bool {
 	return v.AuthState&state > 0
 }

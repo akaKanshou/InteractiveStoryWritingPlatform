@@ -47,13 +47,14 @@ func validateUsername(name string) error {
 
 func (s *Server) registerUser(user *User) error {
 	_, err := s.PgConn.Exec(context.Background(),
-		`INSERT INTO users (username, display_name, email, user_id) values ($1, $2, $3, $4)`,
-		user.Username, user.Name, user.Email, user.GoogleUserID)
+		`INSERT INTO users (username, email, user_id) values ($1, $2, $3)`,
+		user.Username, user.Email, user.GoogleUserID)
 
 	if err != nil {
 		return err
 	}
 
+	user.AuthState |= AuthDB
 	return nil
 }
 

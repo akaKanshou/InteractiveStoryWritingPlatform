@@ -79,8 +79,7 @@ func (s *Server) authCheck() gin.HandlerFunc {
 		if u.getState(AuthGoogle) && u.getState(AuthDB) {
 			c.Next()
 		} else {
-			c.Status(http.StatusForbidden)
-			return
+			c.AbortWithStatus(http.StatusForbidden)
 		}
 	}
 }

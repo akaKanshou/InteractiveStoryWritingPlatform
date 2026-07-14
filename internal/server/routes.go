@@ -52,13 +52,20 @@ func (s *Server) RegisterRoutes() http.Handler {
 		})
 	}
 
-	// api
+	// api routes
+	publicApi := r.Group("/api")
+	{
+		publicApi.GET("/getstories/{user}", s.userDashboardHandler)
+	}
 
 	// static assets
-	r.StaticFile("/favicon.ico", "./favicon.ico")
-	r.Static("/css", "webpages/css")
-	r.Static("/images", "webpages/images")
-	r.Static("/scripts", "webpages/scripts")
+	staticAssets := r.Group("/")
+	{
+		staticAssets.StaticFile("/favicon.ico", "./favicon.ico")
+		staticAssets.Static("/css", "webpages/css")
+		staticAssets.Static("/images", "webpages/images")
+		staticAssets.Static("/scripts", "webpages/scripts")
+	}
 
 	return r
 }
@@ -286,15 +293,13 @@ func (s *Server) userRegisterHandler(c *gin.Context) {
 }
 
 func (s *Server) userDashboardHandler(c *gin.Context) {
-	u, err := s.getUserInfoFromSession(c)
+	u := User{}
+
+	err := s.getUser(&u)
 	if err != nil {
 		fmt.Println(err)
 		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
-	}
-
-	if !(u.getState(AuthGoogle) && u.getState(AuthDB)) {
-		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
 	}
 
 	err = execTemplate(c, u, "webpages/dashboard.html")

@@ -12,9 +12,6 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-// TODO: group /user URLS to auto check AuthDB
-// TODO: change /user/create to /register
-
 func (s *Server) RegisterRoutes() http.Handler {
 	r := gin.New()
 
@@ -27,24 +24,38 @@ func (s *Server) RegisterRoutes() http.Handler {
 		AllowCredentials: true, // Enable cookies/auth
 	}))
 
+	// public routes
 	r.GET("/", s.helloWorldHandler)
 
-	r.GET("/login", s.loginHandler)
-	r.GET("/auth/google", s.authGoogleHandler)
-	r.GET("/auth/google/callback", s.authGoogleCallbackHandler)
-	r.GET("/logout", s.logoutHandler)
+	// auth routes
+	authGroup := r.Group("/auth")
+	{
+		authGroup.GET("/login", s.loginHandler)
+		authGroup.GET("/google", s.authGoogleHandler)
+		authGroup.GET("/google/callback", s.authGoogleCallbackHandler)
+		authGroup.GET("/logout", s.logoutHandler)
+		authGroup.GET("/register", s.userCreateHandler)
 
-	r.GET("/user/flow", func(c *gin.Context) {
-		if err := execTemplate(c, nil, "webpages/flow.html"); err != nil {
-			fmt.Println(err)
-		}
-	})
+		authGroup.POST("/register", s.userRegisterHandler)
+	}
 
-	r.GET("/user/create", s.userCreateHandler)
-	r.GET("/user/dashboard", s.userDashboardHandler)
+	// user routes
+	userGroup := r.Group("/user")
+	userGroup.Use(s.authCheck())
+	{
+		userGroup.GET("/dashboard", s.userDashboardHandler)
 
-	r.POST("/user/create", s.userRegisterHandler)
+		userGroup.GET("/flow", func(c *gin.Context) {
+			if err := execTemplate(c, nil, "webpages/flow.html"); err != nil {
+				fmt.Println(err)
+			}
+		})
+	}
 
+	// api
+
+	// static assets
+	r.StaticFile("/favicon.ico", "./favicon.ico")
 	r.Static("/css", "webpages/css")
 	r.Static("/images", "webpages/images")
 	r.Static("/scripts", "webpages/scripts")
@@ -126,7 +137,7 @@ func (s *Server) authGoogleCallbackHandler(c *gin.Context) {
 
 	err = s.getUser(&v)
 	if (err != nil) && errors.Is(err, pgx.ErrNoRows) {
-		c.Redirect(http.StatusTemporaryRedirect, "/user/create")
+		c.Redirect(http.StatusTemporaryRedirect, "/auth/register")
 		return
 	} else if err != nil {
 		c.Writer.WriteHeader(http.StatusInternalServerError)
@@ -154,7 +165,7 @@ func (s *Server) authGoogleHandler(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "/")
 		return
 	} else if userInfo.getState(AuthGoogle) {
-		c.Redirect(http.StatusTemporaryRedirect, "/user/create")
+		c.Redirect(http.StatusTemporaryRedirect, "/auth/register")
 		return
 	}
 
@@ -193,7 +204,7 @@ func (s *Server) loginHandler(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "/")
 		return
 	} else if userInfo.getState(AuthGoogle) {
-		c.Redirect(http.StatusTemporaryRedirect, "/user/create")
+		c.Redirect(http.StatusTemporaryRedirect, "/auth/register")
 		return
 	}
 
@@ -213,7 +224,7 @@ func (s *Server) userCreateHandler(c *gin.Context) {
 	if u.getState(AuthDB) {
 		c.Redirect(http.StatusTemporaryRedirect, "/")
 	} else if !u.getState(AuthGoogle) {
-		c.Redirect(http.StatusTemporaryRedirect, "/login")
+		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
 	}
 
 	if err = execTemplate(c, u, "webpages/createuser.html"); err != nil {
@@ -232,7 +243,7 @@ func (s *Server) userRegisterHandler(c *gin.Context) {
 	if u.getState(AuthDB) {
 		c.Redirect(http.StatusTemporaryRedirect, "/")
 	} else if !u.getState(AuthGoogle) {
-		c.Redirect(http.StatusTemporaryRedirect, "/login")
+		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
 	}
 
 	username := c.PostForm("username")
@@ -283,7 +294,7 @@ func (s *Server) userDashboardHandler(c *gin.Context) {
 	}
 
 	if !(u.getState(AuthGoogle) && u.getState(AuthDB)) {
-		c.Redirect(http.StatusTemporaryRedirect, "/login")
+		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
 	}
 
 	err = execTemplate(c, u, "webpages/dashboard.html")

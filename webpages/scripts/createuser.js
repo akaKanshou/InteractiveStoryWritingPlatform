@@ -53,7 +53,7 @@ async function checkAndSubmit() {
     const formData = new FormData()
     formData.append("username", document.getElementById("regUsername").value.toLowerCase())
 
-    const req = new Request("https://localhost:8080/user/create", {
+    const req = new Request("https://localhost:8080/auth/register", {
         method: "POST",
         body: formData,
     })

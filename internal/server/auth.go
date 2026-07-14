@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/url"
 
 	"github.com/gin-gonic/gin"
@@ -64,4 +65,22 @@ func (s *Server) exchangeTokenForUser(code string, c *gin.Context) (User, error)
 
 	v.AuthState |= AuthGoogle
 	return v, nil
+}
+
+func (s *Server) authCheck() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		u, err := s.getUserInfoFromSession(c)
+		if err != nil {
+			fmt.Println(err)
+			c.Status(http.StatusForbidden)
+			return
+		}
+
+		if u.getState(AuthGoogle) && u.getState(AuthDB) {
+			c.Next()
+		} else {
+			c.Status(http.StatusForbidden)
+			return
+		}
+	}
 }

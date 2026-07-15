@@ -12,6 +12,8 @@ import (
 	"golang.org/x/oauth2"
 )
 
+//TODO: Fix remember me
+
 func (s *Server) setAuthSession(c *gin.Context) (string, error) {
 	session, err := s.store.Get(c.Request, "sessionISWP")
 
@@ -24,9 +26,9 @@ func (s *Server) setAuthSession(c *gin.Context) (string, error) {
 	session.Values["state"] = stateString
 
 	if c.Query("remember") == "true" {
-		session.Options.MaxAge = 7 * 86400
+		session.Values["remember"] = 7 * 86400
 	} else {
-		session.Options.MaxAge = 86400
+		session.Values["remember"] = 86400
 	}
 
 	oAuthReqUrl := s.googleOAuthConfig.AuthCodeURL(stateString, oauth2.AccessTypeOffline)

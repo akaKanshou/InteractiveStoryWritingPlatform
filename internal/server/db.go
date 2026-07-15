@@ -84,8 +84,20 @@ func (s *Server) getUser(u *user) error {
 
 func (s *Server) insertStory(st *story, u *user) error {
 	_, err := s.PgConn.Exec(context.Background(),
-		`INSERT INTO stories (story_id, username, story_name, description) VALUES ($1, $2, $3, $4)`,
-		st.StoryID, u.Username, st.StoryName, st.Description)
+		`INSERT INTO stories (story_id, username, story_name, description, visibility) VALUES ($1, $2, $3, $4, $5)`,
+		st.StoryID, u.Username, st.StoryName, st.Description, st.Visibility)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Server) updateStory(st *story, u *user) error {
+	_, err := s.PgConn.Exec(context.Background(),
+		`UPDATE stories SET story_name=$1, description=$2, visibility=$3 WHERE story_id=$4`,
+		st.StoryName, st.Description, st.Visibility, st.StoryID)
 
 	if err != nil {
 		return err

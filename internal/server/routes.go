@@ -1,10 +1,12 @@
 package server
 
 import (
+	"crypto/rand"
 	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -56,6 +58,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	privateApi.Use(s.authCheck())
 	{
 		privateApi.POST("/newstory", s.newStoryHandler)
+		publicApi.POST("/editstory", s.editStoryHandler)
 
 		publicApi.GET("/getstories/:username/private", s.getPublicUserStoriesHandler)
 		publicApi.GET("/getstories/:username/all", s.getPublicUserStoriesHandler)
@@ -324,7 +327,18 @@ func (s *Server) getPublicUserStoriesHandler(c *gin.Context) {
 }
 
 func (s *Server) newStoryHandler(c *gin.Context) {
-	storyID, err := s.newStory(c)
+	st := story{
+		StoryID:     rand.Text()[:15],
+		StoryName:   c.PostForm("story_name"),
+		Description: c.PostForm("description"),
+		Visibility:  -1,
+	}
+
+	if visStr := c.PostForm("visibility"); visStr != "" {
+		st.Visibility, _ = strconv.Atoi(visStr[:1])
+	}
+
+	storyID, err := s.newStory(c, &st)
 
 	if err != nil {
 		fmt.Println(err)
@@ -339,4 +353,27 @@ func (s *Server) newStoryHandler(c *gin.Context) {
 	if _, err := c.Writer.Write([]byte(storyID)); err != nil {
 		fmt.Println(err)
 	}
+}
+
+func (s *Server) editStoryHandler(c *gin.Context) {
+	st := story{
+		StoryID:     c.PostForm("story_id"),
+		StoryName:   c.PostForm("story_name"),
+		Description: c.PostForm("description"),
+		Visibility:  -1,
+	}
+
+	if visStr := c.PostForm("visibility"); visStr != "" {
+		st.Visibility, _ = strconv.Atoi(visStr[:1])
+	}
+
+	if err := s.editStory(c, &st); err != nil {
+		fmt.Println(err)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
+		c.Writer.WriteString(err.Error())
+		return
+	}
+
+	c.Writer.WriteHeader(http.StatusOK)
+	c.Writer.WriteString("Story edited!")
 }

@@ -5,6 +5,10 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Login</title>
 		<style>
+			form {
+				justify-self: center;
+			}
+
 			body {
 				background-color: #222222;
 			}
@@ -13,21 +17,35 @@
 				font-family: "JetBrainsMono Nerd Font", monospace !important;
 			}
 
-			.btn {
+			.btn,
+			input,
+			label {
 				display: block;
-				margin: 200px auto;
+				margin: 50px auto;
 				background-color: cornflowerblue;
 				border: none;
 				border-radius: 10px;
 				padding: 10px 15px;
+				width: fit-content;
 			}
 
-			 a {
-				 color: white;
-				 text-decoration: none;
-				 font-size: 20px;
-				 font-weight: 500;
-			 }
+			input,
+			label {
+				display: inline;
+				color: white;
+				margin: 20px
+			}
+
+			.result {
+				color: white;
+			}
+
+			a {
+				color: white;
+				text-decoration: none;
+				font-size: 20px;
+				font-weight: 500;
+			}
 		</style>
 	</head>
 	<body>
@@ -37,12 +55,30 @@
 				<a href="auth/login">Login</a>
 			</button>
 
+			<form>
+				<label for="storyname">Story name: </label>
+				<input type="text" id="storyname" />
+				<label for="storydesc">Story description: </label>
+				<input type="text" id="storydesc" />
+				<div class="result" id="storyid"></div>
+				<button type="button" onclick="createStory()" class="btn">
+					<a>Create story</a>
+				</button>
+			</form>
+
+			<form>
+				<label for="username">Username: </label>
+				<input type="text" id="username" />
+				<div class="result" id="stories"></div>
+				<button type="button" onclick="getStories()" class="btn">
+					<a>Get stories</a>
+				</button>
+			</form>
+
 			<button type="button" onclick="showOutput()" class="btn">
 				<a>Log output</a>
 			</button>
-
 			<div id="editorjs"></div>
-
 		</main>
 
 		<script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
@@ -58,38 +94,38 @@
 				tools: {
 					header: {
 						class: Header,
-						inlineToolbar: ['italic', 'bold'],
+						inlineToolbar: ["italic", "bold"],
 						config: {
-							placeholder: 'Heading',
+							placeholder: "Heading",
 							levels: [2, 3, 4],
-							defaultLevel: 3
+							defaultLevel: 3,
 						},
-						shortcut: 'CMD+SHIFT+H'
+						shortcut: "CMD+SHIFT+H",
 					},
 
 					quote: {
 						class: Quote,
 						inlineToolbar: true,
 						config: {
-							quotePlaceholder: 'Enter a quote',
-							captionPlaceholder: 'Quote\'s author',
+							quotePlaceholder: "Enter a quote",
+							captionPlaceholder: "Quote's author",
 						},
-						shortcut: 'CMD+SHIFT+O'
+						shortcut: "CMD+SHIFT+O",
 					},
 
 					delimiter: Delimiter,
 				},
 
-				defaultBlock: 'paragraph',
+				defaultBlock: "paragraph",
 
-				onReady: function() {
-					console.log("EditorJS is ready")
+				onReady: function () {
+					console.log("EditorJS is ready");
 				},
 
-				onChange: function(api, event) {
-					console.log('something changed');
-					console.log(api)
-					console.log(event)
+				onChange: function (api, event) {
+					console.log("something changed");
+					console.log(api);
+					console.log(event);
 				},
 
 				data: {
@@ -98,40 +134,71 @@
 							type: "header",
 							data: {
 								text: "Editor.js",
-								level: 2
-							}
+								level: 2,
+							},
 						},
 
 						{
 							type: "paragraph",
 							data: {
-								text : 'Hey. Meet the new Editor. On this page you can see it in action — try to edit this text. Source code of the page contains the example of connection and configuration.'
-							}
-						}
-					]
-				}
+								text: "Hey. Meet the new Editor. On this page you can see it in action — try to edit this text. Source code of the page contains the example of connection and configuration.",
+							},
+						},
+					],
+				},
 			});
 
 			function showOutput() {
-				editor.save()
-						.then((savedData) => {
-							console.log(savedData)
-							// cPreview.show(savedData, document.getElementById("output"));
-						})
-						.catch((error) => {
-							console.error('Saving error', error);
-						});
+				editor
+					.save()
+					.then((savedData) => {
+						console.log(savedData);
+						// cPreview.show(savedData, document.getElementById("output"));
+					})
+					.catch((error) => {
+						console.error("Saving error", error);
+					});
 			}
 		</script>
 
-	<script>
-		document.getElementById("editorjs").addEventListener("keydown",  (event) => {
-			event.preventDefault()
-			if (event.ctrlKey && (event.key === 's')) {
-				showOutput()
+		<script>
+			document
+				.getElementById("editorjs")
+				.addEventListener("keydown", (event) => {
+					event.preventDefault();
+					if (event.ctrlKey && event.key === "s") {
+						showOutput();
+					}
+				});
+		</script>
+
+		<script>
+			async function createStory() {
+				const sname = document.getElementById("storyname").value
+				const sdesc = document.getElementById("storydesc").value
+
+				const formdata = new FormData()
+				formdata.append("story_name", sname)
+				formdata.append("description", sdesc)
+
+				const req = new Request("https://localhost:8080/api/newstory", {
+					method: "POST",
+					body: formdata,
+				})
+
+				const resp = await fetch(req)
+				document.getElementById("storyid").textContent = await resp.text()
 			}
-		})
-	</script>
+		</script>
+
+		<script>
+			async function getStories() {
+				const uname = document.getElementById("username").value
+				const req = new Request(`https://localhost:8080/api/getstories/${uname}/public`, {method: "GET"})
+
+				const resp = await fetch(req)
+				document.getElementById("stories").textContent = await resp.text()
+			}
+		</script>
 	</body>
 </html>
-

@@ -43,7 +43,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	userGroup := r.Group("/user")
 	userGroup.Use(s.authCheck())
 	{
-		userGroup.GET("/dashboard", s.userDashboardHandler)
+		userGroup.GET("/mystories", s.userDashboardHandler)
 
 		userGroup.GET("/flow", func(c *gin.Context) {
 			if err := execTemplate(c, nil, "webpages/flow.html"); err != nil {

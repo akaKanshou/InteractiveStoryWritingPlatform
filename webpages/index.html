@@ -8,7 +8,12 @@
 			body {
 				background-color: #222222;
 			}
-			button {
+
+			body * {
+				font-family: "JetBrainsMono Nerd Font", monospace !important;
+			}
+
+			.btn {
 				display: block;
 				margin: 200px auto;
 				background-color: cornflowerblue;
@@ -16,21 +21,117 @@
 				border-radius: 10px;
 				padding: 10px 15px;
 			}
-			a {
-				color: white;
-				text-decoration: none;
-				font-family: "JetBrainsMono Nerd Font", monospace;
-				font-size: 20px;
-				font-weight: 500;
-			}
+
+			 a {
+				 color: white;
+				 text-decoration: none;
+				 font-size: 20px;
+				 font-weight: 500;
+			 }
 		</style>
 	</head>
 	<body>
 		<p style="color: white">Hello {{printf .Username}}</p>
 		<main>
-			<button>
+			<button class="btn">
 				<a href="auth/login">Login</a>
 			</button>
+
+			<button type="button" onclick="showOutput()" class="btn">
+				<a>Log output</a>
+			</button>
+
+			<div id="editorjs"></div>
+
 		</main>
+
+		<script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@latest"></script>
+
+		<script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+
+		<script>
+			let editor = new EditorJS({
+				readOnly: false,
+				holder: "editorjs",
+				tools: {
+					header: {
+						class: Header,
+						inlineToolbar: ['italic', 'bold'],
+						config: {
+							placeholder: 'Heading',
+							levels: [2, 3, 4],
+							defaultLevel: 3
+						},
+						shortcut: 'CMD+SHIFT+H'
+					},
+
+					quote: {
+						class: Quote,
+						inlineToolbar: true,
+						config: {
+							quotePlaceholder: 'Enter a quote',
+							captionPlaceholder: 'Quote\'s author',
+						},
+						shortcut: 'CMD+SHIFT+O'
+					},
+
+					delimiter: Delimiter,
+				},
+
+				defaultBlock: 'paragraph',
+
+				onReady: function() {
+					console.log("EditorJS is ready")
+				},
+
+				onChange: function(api, event) {
+					console.log('something changed');
+					console.log(api)
+					console.log(event)
+				},
+
+				data: {
+					blocks: [
+						{
+							type: "header",
+							data: {
+								text: "Editor.js",
+								level: 2
+							}
+						},
+
+						{
+							type: "paragraph",
+							data: {
+								text : 'Hey. Meet the new Editor. On this page you can see it in action — try to edit this text. Source code of the page contains the example of connection and configuration.'
+							}
+						}
+					]
+				}
+			});
+
+			function showOutput() {
+				editor.save()
+						.then((savedData) => {
+							console.log(savedData)
+							// cPreview.show(savedData, document.getElementById("output"));
+						})
+						.catch((error) => {
+							console.error('Saving error', error);
+						});
+			}
+		</script>
+
+	<script>
+		document.getElementById("editorjs").addEventListener("keydown",  (event) => {
+			event.preventDefault()
+			if (event.ctrlKey && (event.key === 's')) {
+				showOutput()
+			}
+		})
+	</script>
 	</body>
 </html>
+

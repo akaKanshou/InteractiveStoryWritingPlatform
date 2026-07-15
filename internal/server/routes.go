@@ -44,18 +44,18 @@ func (s *Server) RegisterRoutes() http.Handler {
 	userGroup.Use(s.authCheck())
 	{
 		userGroup.GET("/mystories", s.userDashboardHandler)
-
-		userGroup.GET("/flow", func(c *gin.Context) {
-			if err := execTemplate(c, nil, "webpages/flow.html"); err != nil {
-				fmt.Println(err)
-			}
-		})
 	}
 
 	// api routes
 	publicApi := r.Group("/api")
 	{
 		publicApi.GET("/getstories/{user}", s.userDashboardHandler)
+	}
+
+	privateApi := r.Group("/api")
+	privateApi.Use(s.authCheck())
+	{
+		privateApi.GET("/newstory", s.newStoryHandler)
 	}
 
 	// static assets
@@ -162,16 +162,16 @@ func (s *Server) authGoogleCallbackHandler(c *gin.Context) {
 }
 
 func (s *Server) authGoogleHandler(c *gin.Context) {
-	userInfo, err := s.getUserInfoFromSession(c)
+	u, err := s.getUserInfoFromSession(c)
 
 	if err != nil {
 		fmt.Println(err)
 		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
-	} else if userInfo.getState(AuthDB) {
+	} else if u.getState(AuthDB) {
 		c.Redirect(http.StatusTemporaryRedirect, "/")
 		return
-	} else if userInfo.getState(AuthGoogle) {
+	} else if u.getState(AuthGoogle) {
 		c.Redirect(http.StatusTemporaryRedirect, "/auth/register")
 		return
 	}
@@ -187,35 +187,35 @@ func (s *Server) authGoogleHandler(c *gin.Context) {
 }
 
 func (s *Server) helloWorldHandler(c *gin.Context) {
-	userInfo, err := s.getUserInfoFromSession(c)
+	u, err := s.getUserInfoFromSession(c)
 	if err != nil {
 		fmt.Println(err)
 		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	if err = execTemplate(c, userInfo, "webpages/index.html"); err != nil {
+	if err = execTemplate(c, u, "webpages/index.html"); err != nil {
 		fmt.Println(err)
 	}
 }
 
 func (s *Server) loginHandler(c *gin.Context) {
-	userInfo, err := s.getUserInfoFromSession(c)
+	u, err := s.getUserInfoFromSession(c)
 	if err != nil {
 		fmt.Println(err)
 		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	if userInfo.getState(AuthGoogle) && userInfo.getState(AuthDB) {
+	if u.getState(AuthGoogle) && u.getState(AuthDB) {
 		c.Redirect(http.StatusTemporaryRedirect, "/")
 		return
-	} else if userInfo.getState(AuthGoogle) {
+	} else if u.getState(AuthGoogle) {
 		c.Redirect(http.StatusTemporaryRedirect, "/auth/register")
 		return
 	}
 
-	if err = execTemplate(c, userInfo, "webpages/login.html"); err != nil {
+	if err = execTemplate(c, u, "webpages/login.html"); err != nil {
 		fmt.Println(err)
 	}
 }
@@ -293,7 +293,7 @@ func (s *Server) userRegisterHandler(c *gin.Context) {
 }
 
 func (s *Server) userDashboardHandler(c *gin.Context) {
-	u := User{}
+	u := user{}
 
 	err := s.getUser(&u)
 	if err != nil {
@@ -306,4 +306,8 @@ func (s *Server) userDashboardHandler(c *gin.Context) {
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+func (s *Server) newStoryHandler(c *gin.Context) {
+
 }

@@ -45,7 +45,7 @@ func validateUsername(name string) error {
 	return err
 }
 
-func (s *Server) registerUser(user *User) error {
+func (s *Server) registerUser(user *user) error {
 	_, err := s.PgConn.Exec(context.Background(),
 		`INSERT INTO users (username, email, user_id) values ($1, $2, $3)`,
 		user.Username, user.Email, user.GoogleUserID)
@@ -58,7 +58,7 @@ func (s *Server) registerUser(user *User) error {
 	return nil
 }
 
-func (s *Server) getUser(u *User) error {
+func (s *Server) getUser(u *user) error {
 	ok := validateUserID(u.GoogleUserID)
 
 	if !ok {

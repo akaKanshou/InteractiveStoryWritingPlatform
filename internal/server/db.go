@@ -10,6 +10,10 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+//TODO: Add page functionality in getStories
+//TODO: Add "last modified" statistic to stories
+//TODO: Add visibility (pub/priv/all) field to stories
+
 func Connect() (*pgx.Conn, error) {
 	conn, err := pgx.Connect(context.Background(), fmt.Sprintf(
 		"postgres://%v:%v@%v:%v/%v",
@@ -76,4 +80,44 @@ func (s *Server) getUser(u *user) error {
 
 	u.AuthState |= AuthDB
 	return nil
+}
+
+func (s *Server) insertStory(st *story, u *user) error {
+	_, err := s.PgConn.Exec(context.Background(),
+		`INSERT INTO stories (story_id, username, story_name, description) VALUES ($1, $2, $3, $4)`,
+		st.StoryID, u.Username, st.StoryName, st.Description)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Server) getStories(username string) ([]story, error) {
+	if validateUsername(username) != nil {
+		return nil, fmt.Errorf("invalid username")
+	}
+
+	rows, err := s.PgConn.Query(context.Background(),
+		`SELECT story_name, description FROM stories where username=$1`,
+		username)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	stories := make([]story, 0, 50)
+	for rows.Next() {
+		var st story
+		err := rows.Scan(&st.StoryName, &st.Description)
+		if err != nil {
+			return nil, err
+		}
+		stories = append(stories, st)
+	}
+
+	return stories, nil
 }

@@ -49,13 +49,16 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// api routes
 	publicApi := r.Group("/api")
 	{
-		publicApi.GET("/getstories/{user}", s.userDashboardHandler)
+		publicApi.GET("/getstories/:username/public", s.getPublicUserStoriesHandler)
 	}
 
 	privateApi := r.Group("/api")
 	privateApi.Use(s.authCheck())
 	{
-		privateApi.GET("/newstory", s.newStoryHandler)
+		privateApi.POST("/newstory", s.newStoryHandler)
+
+		publicApi.GET("/getstories/:username/private", s.getPublicUserStoriesHandler)
+		publicApi.GET("/getstories/:username/all", s.getPublicUserStoriesHandler)
 	}
 
 	// static assets
@@ -293,9 +296,7 @@ func (s *Server) userRegisterHandler(c *gin.Context) {
 }
 
 func (s *Server) userDashboardHandler(c *gin.Context) {
-	u := user{}
-
-	err := s.getUser(&u)
+	u, err := s.getUserInfoFromSession(c)
 	if err != nil {
 		fmt.Println(err)
 		c.Writer.WriteHeader(http.StatusInternalServerError)
@@ -308,6 +309,34 @@ func (s *Server) userDashboardHandler(c *gin.Context) {
 	}
 }
 
-func (s *Server) newStoryHandler(c *gin.Context) {
+func (s *Server) getPublicUserStoriesHandler(c *gin.Context) {
+	stories, err := s.getStories(c.Param("username"))
+	if err != nil {
+		fmt.Println(err)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
+	c.Writer.WriteHeader(http.StatusOK)
+	if _, err := c.Writer.Write([]byte(fmt.Sprintf("%v", stories))); err != nil {
+		fmt.Println(err)
+	}
+}
+
+func (s *Server) newStoryHandler(c *gin.Context) {
+	storyID, err := s.newStory(c)
+
+	if err != nil {
+		fmt.Println(err)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
+		if _, err := c.Writer.Write([]byte(err.Error())); err != nil {
+			fmt.Println(err)
+		}
+		return
+	}
+
+	c.Writer.WriteHeader(http.StatusCreated)
+	if _, err := c.Writer.Write([]byte(storyID)); err != nil {
+		fmt.Println(err)
+	}
 }

@@ -16,7 +16,7 @@
 
 		<nav class="dashboard-nav glass-strong" id="dashboardNav">
 			<div class="nav-left">
-				<div class="nav-logo">
+				<div class="nav-logo" id="navlogo">
 					<svg width="32" height="32" viewBox="0 0 48 48" fill="none">
 						<defs>
 							<linearGradient
@@ -50,6 +50,11 @@
 					</svg>
 					<span class="nav-brand">ForgeVerse</span>
 				</div>
+				<script>
+                document.getElementById("nav-logo").addEventListener("click", function () {
+                window.location.href = "/";
+                });
+                </script>
 			</div>
 
 			<div class="nav-center">
@@ -118,6 +123,11 @@
 				<button class="btn btn-primary create-story-btn" id="createStoryBtn">
 					<span>✦</span> Create New Story
 				</button>
+				<script>
+                    document.getElementById("createStoryBtn").addEventListener("click", function () {
+                    window.location.href = "/userwrite/";
+                    });
+                </script>
 			</section>
 
 			<section class="dash-stats" id="dashStats">
@@ -191,6 +201,14 @@
 						<button class="filter-btn" data-filter="PUBLIC">Public</button>
 						<button class="filter-btn" data-filter="PRIVATE">Private</button>
 					</div>
+					<style>
+					.section-filters .filter-btn:hover{
+                        background-color:#4f46e5;
+                        color:white;
+                        border-color:black;
+                        cursor:pointer;
+                        transition:0.2s;
+                                }</style>
 				</div>
 
 				<div class="loading-spinner" id="storiesLoading"></div>

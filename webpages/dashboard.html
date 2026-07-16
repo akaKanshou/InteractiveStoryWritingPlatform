@@ -16,7 +16,7 @@
 
 		<nav class="dashboard-nav glass-strong" id="dashboardNav">
 			<div class="nav-left">
-				<div class="nav-logo" id="navlogo">
+				<div class="nav-logo" id="navlogo" >
 					<svg width="32" height="32" viewBox="0 0 48 48" fill="none">
 						<defs>
 							<linearGradient
@@ -47,11 +47,16 @@
 							stroke-width="2"
 							stroke-linecap="round"
 						/>
+						<style>
+                        #navLogo{
+                        cursor:pointer;
+                        }
+                        </style>
 					</svg>
 					<span class="nav-brand">ForgeVerse</span>
 				</div>
 				<script>
-                document.getElementById("nav-logo").addEventListener("click", function () {
+                document.getElementById("navlogo").addEventListener("click", function () {
                 window.location.href = "/";
                 });
                 </script>

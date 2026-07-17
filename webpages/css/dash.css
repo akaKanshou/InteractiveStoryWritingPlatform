@@ -178,13 +178,22 @@ body {
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     opacity: 0;
+    display: none;
     visibility: hidden;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
     transform: translateY(-8px);
     transition: all var(--transition-base);
+}
+.profile-name{
+    position: relative;
+    z-index: 99999;
+    cursor: pointer;
 }
 
 .profile-dropdown.open {
     opacity: 1;
+    display: block;
     visibility: visible;
     transform: translateY(0);
 }

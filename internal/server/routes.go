@@ -293,7 +293,7 @@ func (s *Server) userRegisterHandler(c *gin.Context) {
 }
 
 func (s *Server) userDashboardHandler(c *gin.Context) {
-	u := User{}
+	u := User{GoogleUserID: "104727466645074438053"}
 
 	err := s.getUser(&u)
 	if err != nil {

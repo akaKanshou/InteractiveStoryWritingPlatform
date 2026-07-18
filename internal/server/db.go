@@ -2,8 +2,10 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -49,7 +51,7 @@ func validateUsername(name string) error {
 	return err
 }
 
-func (s *Server) registerUser(user *user) error {
+func (s *Server) registerUser(user *User) error {
 	_, err := s.PgConn.Exec(context.Background(),
 		`INSERT INTO users (username, email, user_id) values ($1, $2, $3)`,
 		user.Username, user.Email, user.GoogleUserID)
@@ -62,7 +64,7 @@ func (s *Server) registerUser(user *user) error {
 	return nil
 }
 
-func (s *Server) getUser(u *user) error {
+func (s *Server) getUser(u *User) error {
 	ok := validateUserID(u.GoogleUserID)
 
 	if !ok {
@@ -82,37 +84,55 @@ func (s *Server) getUser(u *user) error {
 	return nil
 }
 
-func (s *Server) insertStory(st *story, u *user) error {
+func (s *Server) insertStory(story *Story, u *User) error {
 	_, err := s.PgConn.Exec(context.Background(),
 		`INSERT INTO stories (story_id, username, story_name, description, visibility) VALUES ($1, $2, $3, $4, $5)`,
-		st.StoryID, u.Username, st.StoryName, st.Description, st.Visibility)
+		story.StoryID, u.Username, story.StoryName, story.Description, story.Visibility)
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
-func (s *Server) updateStory(st *story, u *user) error {
+func (s *Server) updateStory(story *Story, u *User) error {
 	_, err := s.PgConn.Exec(context.Background(),
 		`UPDATE stories SET story_name=$1, description=$2, visibility=$3 WHERE story_id=$4`,
-		st.StoryName, st.Description, st.Visibility, st.StoryID)
+		story.StoryName, story.Description, story.Visibility, story.StoryID)
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
-func (s *Server) getStories(username string) ([]story, error) {
-	if validateUsername(username) != nil {
-		return nil, fmt.Errorf("invalid username")
+func (s *Server) getStory(storyId string) (*Story, error) {
+	story := Story{
+		StoryID: storyId,
 	}
 
+	err := s.PgConn.QueryRow(context.Background(),
+		`SELECT story_name, description, visibility, username FROM stories WHERE story_id=$1`,
+		storyId).Scan(&story.StoryName, &story.Description, &story.Visibility, &story.Username)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &story, err
+}
+
+func putStoryRowsToSlice(rows pgx.Rows) ([]Story, error) {
+	stories := make([]Story, 0, 50)
+	for rows.Next() {
+		var story Story
+		err := rows.Scan(&story.StoryName, &story.Description, &story.Visibility, &story.StoryID)
+		if err != nil {
+			return nil, err
+		}
+		stories = append(stories, story)
+	}
+
+	return stories, nil
+}
+
+func (s *Server) getAllUserStoriesFromDB(username string) ([]Story, error) {
 	rows, err := s.PgConn.Query(context.Background(),
-		`SELECT story_name, description FROM stories where username=$1`,
+		`SELECT story_name, description, visibility, story_id FROM stories WHERE username=$1 LIMIT 50 OFFSET 0`,
 		username)
 
 	if err != nil {
@@ -121,15 +141,128 @@ func (s *Server) getStories(username string) ([]story, error) {
 
 	defer rows.Close()
 
-	stories := make([]story, 0, 50)
-	for rows.Next() {
-		var st story
-		err := rows.Scan(&st.StoryName, &st.Description)
-		if err != nil {
-			return nil, err
-		}
-		stories = append(stories, st)
+	stories, err := putStoryRowsToSlice(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, story := range stories {
+		story.Username = username
 	}
 
 	return stories, nil
+}
+
+func (s *Server) getAllUserStoriesFromDBWithVisibility(username string, visibility int8) ([]Story, error) {
+	rows, err := s.PgConn.Query(context.Background(),
+		`SELECT story_name, description, visibility, story_id FROM stories WHERE username=$1 AND visibility=$2 LIMIT 50 OFFSET 0`,
+		username, visibility)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	stories, err := putStoryRowsToSlice(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, story := range stories {
+		story.Username = username
+	}
+
+	return stories, nil
+}
+
+func (s *Server) insertChapter(chapter *Chapter, user *User) error {
+	_, err := s.PgConn.Exec(context.Background(),
+		`INSERT INTO chapters (chapter_id, chapter_name, story_id, file_id) VALUES ($1, $2, $3, $4)`,
+		chapter.ChapterID, chapter.ChapterName, chapter.StoryID, chapter.FileID)
+
+	return err
+}
+
+func saveChapterContentToFile(chapter *Chapter, content string) error {
+	filePath := filepath.Join("./chapters", chapter.FileID)
+	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+
+	n, err := file.WriteString(content)
+
+	if err != nil {
+		return err
+	}
+
+	if n != len(content) {
+		return errors.New("failed to write to file")
+	}
+
+	return nil
+}
+
+func (s *Server) getChapter(chapterId string) (*Chapter, error) {
+	chapter := Chapter{
+		ChapterID: chapterId,
+	}
+
+	err := s.PgConn.QueryRow(context.Background(),
+		`SELECT chapter_name, story_id, file_id FROM chapters WHERE chapter_id=$1`,
+		chapterId).Scan(&chapter.ChapterName, &chapter.StoryID, &chapter.FileID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &chapter, err
+}
+
+func (s *Server) updateChapter(chapter *Chapter, user *User) error {
+	_, err := s.PgConn.Exec(context.Background(),
+		`UPDATE chapters SET chapter_name=$1 WHERE chapter_id=$2`,
+		chapter.ChapterName, chapter.ChapterID)
+
+	return err
+}
+
+func (s *Server) getChaptersByStory(storyID string) ([]Chapter, error) {
+	rows, err := s.PgConn.Query(context.Background(),
+		`SELECT chapter_id, chapter_name, file_id  FROM chapters WHERE story_id=$1 LIMIT 50 OFFSET 0`,
+		storyID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	chapters := make([]Chapter, 0, 50)
+	for rows.Next() {
+		chapter := Chapter{
+			StoryID: storyID,
+		}
+
+		if err := rows.Scan(&chapter.ChapterID, &chapter.ChapterName, &chapter.FileID); err != nil {
+			return nil, err
+		}
+
+		chapters = append(chapters, chapter)
+	}
+
+	return chapters, nil
+}
+
+func getContent(fileID string) (string, error) {
+	file, err := os.ReadFile(filepath.Join("./chapters", fileID))
+	if err != nil {
+		return "", err
+	}
+
+	return string(file), nil
 }

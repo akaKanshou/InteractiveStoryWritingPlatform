@@ -29,7 +29,7 @@ type Server struct {
 }
 
 func init() {
-	gob.Register(user{})
+	gob.Register(User{})
 }
 
 func NewServer() *Server {

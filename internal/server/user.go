@@ -12,7 +12,7 @@ const (
 	AuthAny    uint8 = 0xFF
 )
 
-type user struct {
+type User struct {
 	Name         string `json:"name" db:"display_name"`
 	Email        string `json:"email" db:"email"`
 	GoogleUserID string `json:"id" db:"user_id"`
@@ -21,23 +21,23 @@ type user struct {
 	AuthState uint8
 }
 
-func (s *Server) getUserInfoFromSession(c *gin.Context) (user, error) {
+func (s *Server) getUserInfoFromSession(c *gin.Context) (User, error) {
 	session, err := s.store.Get(c.Request, "sessionISWP")
 	if err != nil {
 		fmt.Println(err)
-		return user{}, err
+		return User{}, err
 	}
 
 	userInfo := session.Values["userInfo"]
 
 	if userInfo == nil {
-		return user{Name: "Stranger"}, nil
+		return User{}, nil
 	}
 
-	return userInfo.(user), nil
+	return userInfo.(User), nil
 }
 
-func (s *Server) setUserInfoToSession(c *gin.Context, u user) error {
+func (s *Server) setUserInfoToSession(c *gin.Context, u User) error {
 	session, err := s.store.Get(c.Request, "sessionISWP")
 	if err != nil {
 		fmt.Println(err)
@@ -53,6 +53,6 @@ func (s *Server) setUserInfoToSession(c *gin.Context, u user) error {
 	return nil
 }
 
-func (v user) getState(state uint8) bool {
+func (v User) getState(state uint8) bool {
 	return v.AuthState&state > 0
 }

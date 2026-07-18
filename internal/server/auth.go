@@ -41,11 +41,11 @@ func (s *Server) setAuthSession(c *gin.Context) (string, error) {
 	return oAuthReqUrl, nil
 }
 
-func (s *Server) exchangeTokenForUser(code string, c *gin.Context) (user, error) {
+func (s *Server) exchangeTokenForUser(code string, c *gin.Context) (User, error) {
 	token, err := s.googleOAuthConfig.Exchange(c.Request.Context(), code)
 	if err != nil {
 		fmt.Println("errExchange: ", err)
-		return user{}, err
+		return User{}, err
 	}
 
 	authClient := s.googleOAuthConfig.Client(context.Background(), token)
@@ -53,16 +53,16 @@ func (s *Server) exchangeTokenForUser(code string, c *gin.Context) (user, error)
 	authRespFromGoogle, err := authClient.Get("https://www.googleapis.com/oauth2/v2/userinfo")
 	if err != nil {
 		fmt.Println("errResp: ", err)
-		return user{}, err
+		return User{}, err
 	}
 
 	defer authRespFromGoogle.Body.Close()
 
-	var v user
+	var v User
 	err = json.NewDecoder(authRespFromGoogle.Body).Decode(&v)
 	if err != nil {
 		fmt.Println("errDecoding", err)
-		return user{}, err
+		return User{}, err
 	}
 
 	v.AuthState |= AuthGoogle

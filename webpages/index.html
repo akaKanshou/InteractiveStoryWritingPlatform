@@ -48,6 +48,20 @@
 				font-size: 20px;
 				font-weight: 500;
 			}
+
+			.editorContainer {
+				background: white;
+				height: fit-content;
+				width: 60%;
+				justify-self: center;
+				border-radius: 50px;
+				padding-top: 30px
+			}
+
+
+			#editorjs {
+				height: fit-content;
+			}
 		</style>
 	</head>
 	<body>
@@ -84,16 +98,61 @@
 			<form>
 				<label for="username">Username: </label>
 				<input type="text" id="username" />
-				<div class="result" id="stories"></div>
+				<label for="getPrivacy">Privacy</label>
+				<select id="getPrivacy">
+					<option value="private" selected>Private</option>
+					<option value="public">Public</option>
+					<option value="all">All</option>
+				</select>
+
 				<button type="button" onclick="getStories()" class="btn">
 					<a>Get stories</a>
 				</button>
+
+				<div class="result" id="stories"></div>
 			</form>
 
-			<button type="button" onclick="showOutput()" class="btn">
-				<a>Log output</a>
-			</button>
-			<div id="editorjs"></div>
+			<form>
+				<label for="chaptername">Chapter name: </label>
+				<input type="text" id="chaptername" />
+
+				<label for="storyofchapter">Story ID: </label>
+				<input type="text" id="storyofchapter" />
+
+				<div class="result" id="chapterresult"></div>
+				<button type="button" onclick="createChapter()" class="btn">
+					<a>Create chapter</a>
+				</button>
+
+				<label for="chapterid">Chapter id:</label>
+				<input type="text" id="chapterid" />
+
+				<button type="button" onclick="editChapter()" class="btn">
+					<a>Edit chapter</a>
+				</button>
+			</form>
+
+			<div class="editorContainer">
+				<div id="editorjs"></div>
+			</div>
+
+			<form>
+				<label for="storyid2">Story ID: </label>
+				<input type="text" id="storyid2" />
+
+				<label for="chapterid2">Chapter id:</label>
+				<input type="text" id="chapterid2" />
+
+				<div class="result" id="chapterresult2"></div>
+
+				<button type="button" class="btn" onclick="getStoryChapters()"><a>Get all chapters of
+					story</a></button>
+				<button type="button" class="btn" onclick="getChapter()"><a>Get chapter</a></button>
+
+				<div class="editorContainer">
+					<div id="outputjs"></div>
+				</div>
+			</form>
 		</main>
 
 		<script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
@@ -162,26 +221,14 @@
 					],
 				},
 			});
-
-			function showOutput() {
-				editor
-					.save()
-					.then((savedData) => {
-						console.log(savedData);
-						// cPreview.show(savedData, document.getElementById("output"));
-					})
-					.catch((error) => {
-						console.error("Saving error", error);
-					});
-			}
 		</script>
 
 		<script>
 			document
 				.getElementById("editorjs")
 				.addEventListener("keydown", (event) => {
-					event.preventDefault();
 					if (event.ctrlKey && event.key === "s") {
+						event.preventDefault();
 						showOutput();
 					}
 				});
@@ -211,8 +258,9 @@
 		<script>
 			async function getStories() {
 				const uname = document.getElementById("username").value;
+				const getvs = document.getElementById("getPrivacy").value;
 				const req = new Request(
-					`https://localhost:8080/api/getstories/${uname}/public`,
+					`https://localhost:8080/api/getstories/${uname}/${getvs}`,
 					{ method: "GET" }
 				);
 
@@ -241,6 +289,144 @@
 
 				const resp = await fetch(req);
 				document.getElementById("storyresult").textContent = await resp.text();
+			}
+		</script>
+
+		<script>
+			async function createChapter() {
+				const chaptername = document.getElementById("chaptername").value
+				const storyofchapter = document.getElementById("storyofchapter").value
+
+				const chaptercontent = await editor
+						.save()
+						.then((savedData) => {
+							console.log(savedData);
+							return JSON.stringify(savedData)
+						})
+						.catch((error) => {
+							console.error("Saving error", error);
+							return ""
+						});
+
+				const formdata = new FormData();
+				formdata.append("chapter_name", chaptername);
+				formdata.append("story_id", storyofchapter);
+				formdata.append("content", chaptercontent);
+
+				const req = new Request("https://localhost:8080/api/newchapter", {
+					method: "POST",
+					body: formdata,
+				});
+
+				const resp = await fetch(req);
+				document.getElementById("chapterresult").textContent = await resp.text();
+			}
+		</script>
+
+		<script>
+			async function editChapter() {
+				const chaptername = document.getElementById("chaptername").value
+				const chapterid = document.getElementById("chapterid").value
+
+				const chaptercontent = await editor
+						.save()
+						.then((savedData) => {
+							console.log(savedData);
+							return JSON.stringify(savedData)
+						})
+						.catch((error) => {
+							console.error("Saving error", error);
+							return ""
+						});
+
+				const formdata = new FormData();
+				formdata.append("chapter_name", chaptername);
+				formdata.append("chapter_id", chapterid);
+				formdata.append("content", chaptercontent);
+
+				const req = new Request("https://localhost:8080/api/editchapter", {
+					method: "POST",
+					body: formdata,
+				});
+
+				const resp = await fetch(req);
+				document.getElementById("chapterresult").textContent = await resp.text();
+			}
+		</script>
+
+		<script>
+			var outputJS = null
+
+			async function getStoryChapters() {
+				const storyid = document.getElementById("storyid2").value
+
+				const formdata = new FormData();
+				formdata.append("story_id", storyid);
+
+				const req = new Request("https://localhost:8080/api/getstorychapters", {
+					method: "POST",
+					body: formdata,
+				});
+
+				const resp = await fetch(req);
+				document.getElementById("chapterresult2").textContent = await resp.text();
+			}
+
+			async function getChapter() {
+				const chapterid = document.getElementById("chapterid2").value
+
+				const req = new Request(`https://localhost:8080/api/getchapter/${chapterid}`, {
+					method: "GET",
+				});
+
+				const resp = await fetch(req);
+				const resultvalue = await resp.json();
+
+				if (resp.status === 200) {
+					if (outputJS != null) {
+						outputJS.destroy()
+					}
+
+					outputJS = new EditorJS({
+						readOnly: true,
+						holder: "outputjs",
+
+						tools: {
+							header: {
+								class: Header,
+								inlineToolbar: ["italic", "bold"],
+								config: {
+									placeholder: "Heading",
+									levels: [2, 3, 4],
+									defaultLevel: 3,
+								},
+								shortcut: "CMD+SHIFT+H",
+							},
+
+							quote: {
+								class: Quote,
+								inlineToolbar: true,
+								config: {
+									quotePlaceholder: "Enter a quote",
+									captionPlaceholder: "Quote's author",
+								},
+								shortcut: "CMD+SHIFT+O",
+							},
+
+							delimiter: Delimiter,
+						},
+
+						onReady: function () {
+							console.log("EditorJS is ready");
+						},
+
+						data: JSON.parse(resultvalue.content)
+					})
+
+					document.getElementById("chapterresult2").textContent = resultvalue.chapter_name
+				} else {
+					console.log(resultvalue)
+				}
 			}
 		</script>
 	</body>

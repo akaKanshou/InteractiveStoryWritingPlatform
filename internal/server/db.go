@@ -266,3 +266,33 @@ func getContent(fileID string) (string, error) {
 
 	return string(file), nil
 }
+
+func (s *Server) addEdge(from, to string) error {
+	_, err := s.PgConn.Exec(context.Background(),
+		`INSERT INTO edges (from_chap, to_chap) VALUES ($1, $2)`,
+		from, to)
+
+	return err
+}
+
+func (s *Server) getAllEdges(chapterID string) ([]Edge, error) {
+	rows, err := s.PgConn.Query(context.Background(),
+		`SELECT from_chap, to_chap FROM edges WHERE from_chap=$1 OR to_chap=$1`,
+		chapterID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	edges := make([]Edge, 0, 67)
+	for rows.Next() {
+		edge := Edge{}
+		err := rows.Scan(&edge.FromChapter, &edge.ToChapter)
+		if err != nil {
+			return nil, err
+		}
+		edges = append(edges, edge)
+	}
+
+	return edges, nil
+}

@@ -23,6 +23,11 @@ type Chapter struct {
 	Content     string `json:"content,omitempty" db:"content"`
 }
 
+type Edge struct {
+	FromChapter string `json:"from_chapter" db:"from_chapter"`
+	ToChapter   string `json:"to_chapter" db:"to_chapter"`
+}
+
 const (
 	visibilityPrivate int8 = iota
 	visibilityPublic
@@ -235,4 +240,30 @@ func (s *Server) getChapterWithContent(chapterID string, c *gin.Context) (*Chapt
 	}
 
 	return chapter, nil
+}
+
+func (s *Server) checkEdge(from, to string, user *User) error {
+	fromChapter, err := s.getChapter(from)
+	if err != nil {
+		return err
+	}
+	toChapter, err := s.getChapter(to)
+	if err != nil {
+		return err
+	}
+
+	if fromChapter.StoryID != toChapter.StoryID {
+		return errors.New("unauthorized access")
+	}
+
+	story, err := s.getStory(fromChapter.StoryID)
+	if err != nil {
+		return err
+	}
+
+	if story.Username != user.Username {
+		return errors.New("unauthorized access")
+	}
+
+	return nil
 }

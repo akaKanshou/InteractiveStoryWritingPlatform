@@ -57,6 +57,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 		publicApi.GET("/getchapter/:chapterID", s.getChapterHandler)
 
 		publicApi.POST("/getstorychapters", s.getStoryChaptersHandler)
+
+		publicApi.POST("/getedges", s.getEdgesHandler)
 	}
 
 	privateApi := r.Group("/api")
@@ -67,6 +69,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 		privateApi.POST("/newchapter", s.newChapterHandler)
 		privateApi.POST("/editchapter", s.editChapterHandler)
+
+		privateApi.POST("/addedge", s.addEdgeHandler)
 	}
 
 	// static assets
@@ -464,4 +468,59 @@ func (s *Server) getChapterHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, chapter)
+}
+
+func (s *Server) addEdgeHandler(c *gin.Context) {
+	from, to := c.PostForm("from_chapter"), c.PostForm("to_chapter")
+
+	u, err := s.getUserInfoFromSession(c)
+	if err != nil {
+		fmt.Println(err)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	err = s.checkEdge(from, to, &u)
+	if err != nil {
+		fmt.Println(err)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
+		_, err := c.Writer.WriteString(err.Error())
+		if err != nil {
+			fmt.Println(err)
+		}
+		return
+	}
+
+	err = s.addEdge(from, to)
+
+	if err != nil {
+		fmt.Println(err)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
+		_, err := c.Writer.WriteString(err.Error())
+		if err != nil {
+			fmt.Println(err)
+		}
+		return
+	}
+
+	c.Writer.WriteHeader(http.StatusCreated)
+	if _, err := c.Writer.WriteString("Edge added!"); err != nil {
+		fmt.Println(err)
+	}
+}
+
+func (s *Server) getEdgesHandler(c *gin.Context) {
+	chapterID := c.PostForm("chapter_id")
+
+	edges, err := s.getAllEdges(chapterID)
+	if err != nil {
+		fmt.Println(err)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	c.Writer.WriteHeader(http.StatusOK)
+	if _, err := c.Writer.WriteString(fmt.Sprintf("%d edges: %v", len(edges), edges)); err != nil {
+		fmt.Println(err)
+	}
 }

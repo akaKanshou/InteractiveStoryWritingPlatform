@@ -153,7 +153,34 @@
 					<div id="outputjs"></div>
 				</div>
 			</form>
+
+			<form>
+				<label for="fromChapter">From chapter:</label>
+				<input id="fromChapter" type="text" />
+
+				<label for="toChapter">To chapter:</label>
+				<input id="toChapter" type="text" />
+
+				<label for="chapterid3">Chapter id:</label>
+				<input type="text" id="chapterid3" />
+
+				<div class="result" id="edgeresult"></div>
+
+				<button type="button" class="btn" onclick="addEdge()">
+					<a>
+						Add edge
+					</a>
+				</button>
+
+				<button type="button" class="btn" onclick="getEdges()">
+					<a>
+					Get edges
+					</a>
+				</button>
+
+			</form>
 		</main>
+
 
 		<script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
 		<script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
@@ -427,6 +454,40 @@
 				} else {
 					console.log(resultvalue)
 				}
+			}
+		</script>
+
+		<script>
+			async function addEdge() {
+				const from = document.getElementById("fromChapter").value
+				const to = document.getElementById("toChapter").value
+
+				const formdata = new FormData()
+				formdata.append("from_chapter", from)
+				formdata.append("to_chapter", to)
+
+				const req = new Request("https://localhost:8080/api/addedge", {
+					method: "POST",
+					body: formdata
+				})
+
+				const res = await fetch(req)
+				document.getElementById("edgeresult").textContent = await res.text()
+			}
+
+			async function getEdges() {
+				const chapid = document.getElementById("chapterid3").value
+
+				const formdata = new FormData()
+				formdata.append("chapter_id", chapid)
+
+				const req = new Request("https://localhost:8080/api/getedges", {
+					method: "POST",
+					body: formdata
+				})
+
+				const res = await fetch(req)
+				document.getElementById("edgeresult").textContent = await res.text()
 			}
 		</script>
 	</body>

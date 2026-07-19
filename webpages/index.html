@@ -287,7 +287,7 @@
 				const uname = document.getElementById("username").value;
 				const getvs = document.getElementById("getPrivacy").value;
 				const req = new Request(
-					`https://localhost:8080/api/getstories/${uname}/${getvs}`,
+					`https://localhost:8080/api/getstories/${uname}?visibility=${getvs}`,
 					{ method: "GET" }
 				);
 

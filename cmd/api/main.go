@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"codehopperspeak/internal/server"
+	"forgeverse/internal/server"
 )
 
 //TODO: Add error types

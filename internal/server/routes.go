@@ -4,14 +4,16 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"forgeverse/internal/auth"
+	"forgeverse/internal/db"
+	fverrors "forgeverse/internal/errors"
+	"forgeverse/internal/models"
 	"html/template"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 //TODO: change path params to postform params in getstories/user/
@@ -53,7 +55,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// api routes
 	publicApi := r.Group("/api")
 	{
-		publicApi.GET("/getstories/:username/:visibility", s.getUserStoriesHandler)
+		publicApi.GET("/getstories/:username", s.getUserStoriesHandler)
 		publicApi.GET("/getchapter/:chapterID", s.getChapterHandler)
 
 		publicApi.POST("/getstorychapters", s.getStoryChaptersHandler)
@@ -101,20 +103,9 @@ func execTemplate(c *gin.Context, data any, filenames ...string) error {
 }
 
 func (s *Server) logoutHandler(c *gin.Context) {
-	session, err := s.store.Get(c.Request, "sessionISWP")
-
+	err := auth.Logout(c)
 	if err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	session.Options.MaxAge = -1
-	session.Values = make(map[any]any)
-	err = session.Save(c.Request, c.Writer)
-	if err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
+		fverrors.SendErrorResponse(c, err)
 		return
 	}
 
@@ -122,54 +113,42 @@ func (s *Server) logoutHandler(c *gin.Context) {
 }
 
 func (s *Server) authGoogleCallbackHandler(c *gin.Context) {
-	code, stateString := c.Query("code"), c.Query("state")
+	var err fverrors.Error
 
-	if code == "" {
-		fmt.Println("Invalid callback")
-		c.Writer.WriteHeader(400)
+	err = auth.GoogleOAuthCallback(c)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
 		return
 	}
 
-	session, err := s.store.Get(c.Request, "sessionISWP")
+	user, err := auth.GetUserFromSession(c)
+
+	if err != nil && errors.Is(err, fverrors.NoLoginErr) {
+		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
+		return
+	}
 
 	if err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
+		fverrors.SendErrorResponse(c, err)
 		return
 	}
 
-	if session.Values["state"] != stateString {
-		c.Writer.WriteHeader(401)
+	if auth.CheckAuth(user, auth.Db) {
+		c.Redirect(http.StatusTemporaryRedirect, "/")
 		return
 	}
 
-	v, err := s.exchangeTokenForUser(code, c)
-	if err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	session.Values["userInfo"] = v
-	if err := session.Save(c.Request, c.Writer); err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	err = s.getUser(&v)
-	if (err != nil) && errors.Is(err, pgx.ErrNoRows) {
+	user, err = db.GetUserByID(user.UserID)
+	if (err != nil) && (errors.Is(err, fverrors.UserNotFoundError)) {
 		c.Redirect(http.StatusTemporaryRedirect, "/auth/register")
 		return
 	} else if err != nil {
-		c.Writer.WriteHeader(http.StatusInternalServerError)
+		fverrors.SendErrorResponse(c, err)
 		return
 	}
 
-	session.Values["userInfo"] = v
-	if err := session.Save(c.Request, c.Writer); err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
+	if err = auth.SaveUserToSession(c, user); err != nil {
+		fverrors.SendErrorResponse(c, err)
 		return
 	}
 
@@ -177,24 +156,27 @@ func (s *Server) authGoogleCallbackHandler(c *gin.Context) {
 }
 
 func (s *Server) authGoogleHandler(c *gin.Context) {
-	u, err := s.getUserInfoFromSession(c)
+	var err fverrors.Error
 
-	if err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
-		return
-	} else if u.getState(AuthDB) {
-		c.Redirect(http.StatusTemporaryRedirect, "/")
-		return
-	} else if u.getState(AuthGoogle) {
-		c.Redirect(http.StatusTemporaryRedirect, "/auth/register")
+	user, err := auth.GetUserFromSession(c)
+	if err == nil {
+		if auth.CheckAuth(user, auth.Db) {
+			c.Redirect(http.StatusTemporaryRedirect, "/")
+			return
+		} else if auth.CheckAuth(user, auth.Google) {
+			c.Redirect(http.StatusTemporaryRedirect, "/auth/register")
+			return
+		}
+	}
+
+	if !errors.Is(err, fverrors.NoLoginErr) {
+		fverrors.SendErrorResponse(c, err)
 		return
 	}
 
-	oAuthReqUrl, err := s.setAuthSession(c)
+	oAuthReqUrl, err := auth.InitGoogleOAuth(c)
 	if err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
+		fverrors.SendErrorResponse(c, err)
 		return
 	}
 
@@ -202,105 +184,86 @@ func (s *Server) authGoogleHandler(c *gin.Context) {
 }
 
 func (s *Server) helloWorldHandler(c *gin.Context) {
-	u, err := s.getUserInfoFromSession(c)
-	if err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
+	u, err := auth.GetUserFromSession(c)
+	if err != nil && !errors.Is(err, fverrors.NoLoginErr) {
+		fverrors.SendErrorResponse(c, err)
 		return
+	} else if errors.Is(err, fverrors.NoLoginErr) {
+		u = new(models.User{
+			Username: "stranger",
+		})
 	}
 
-	if err = execTemplate(c, &u, "webpages/index.html"); err != nil {
+	if err := execTemplate(c, u, "webpages/index.html"); err != nil {
 		fmt.Println(err)
 	}
 }
 
 func (s *Server) loginHandler(c *gin.Context) {
-	u, err := s.getUserInfoFromSession(c)
-	if err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
+	var err fverrors.Error
+
+	user, err := auth.GetUserFromSession(c)
+	if err != nil && !errors.Is(err, fverrors.NoLoginErr) {
+		fverrors.SendErrorResponse(c, err)
 		return
 	}
 
-	if u.getState(AuthGoogle) && u.getState(AuthDB) {
-		c.Redirect(http.StatusTemporaryRedirect, "/")
-		return
-	} else if u.getState(AuthGoogle) {
+	if err == nil {
+		if auth.CheckAuth(user, AuthDB) {
+			c.Redirect(http.StatusTemporaryRedirect, "/")
+			return
+		}
+
 		c.Redirect(http.StatusTemporaryRedirect, "/auth/register")
 		return
 	}
 
-	if err = execTemplate(c, &u, "webpages/login.html"); err != nil {
+	if err := execTemplate(c, user, "webpages/login.html"); err != nil {
 		fmt.Println(err)
 	}
 }
 
 func (s *Server) userCreateHandler(c *gin.Context) {
-	u, err := s.getUserInfoFromSession(c)
-	if err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
+	user, err := auth.GetUserFromSession(c)
+	if (err != nil) && (errors.Is(err, fverrors.NoLoginErr)) {
+		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
+		return
+	} else if err != nil {
+		fverrors.SendErrorResponse(c, err)
 		return
 	}
 
-	if u.getState(AuthDB) {
+	if auth.CheckAuth(user, AuthDB) {
 		c.Redirect(http.StatusTemporaryRedirect, "/")
-	} else if !u.getState(AuthGoogle) {
-		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
+		return
 	}
 
-	if err = execTemplate(c, &u, "webpages/createuser.html"); err != nil {
+	if err := execTemplate(c, user, "webpages/createuser.html"); err != nil {
 		fmt.Println(err)
 	}
 }
 
 func (s *Server) userRegisterHandler(c *gin.Context) {
-	u, err := s.getUserInfoFromSession(c)
-	if err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	if u.getState(AuthDB) {
-		c.Redirect(http.StatusTemporaryRedirect, "/")
-	} else if !u.getState(AuthGoogle) {
+	user, err := auth.GetUserFromSession(c)
+	if (err != nil) && (errors.Is(err, fverrors.NoLoginErr)) {
 		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
-	}
-
-	username := c.PostForm("username")
-
-	if err = validateUsername(username); err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusBadRequest)
-		if _, err = c.Writer.WriteString(err.Error()); err != nil {
-			fmt.Println(err)
-		}
+		return
+	} else if err != nil {
+		fverrors.SendErrorResponse(c, err)
 		return
 	}
 
-	u.Username = username
+	user.Username = c.PostForm("username")
 
-	err = s.registerUser(&u)
+	user, err = db.RegisterUser(user)
 	if err != nil {
-		if pgErr, ok := errors.AsType[*pgconn.PgError](err); ok {
-			fmt.Println(pgErr.Message)
-			fmt.Println(pgErr.Code)
-		} else {
-			fmt.Println(err)
-		}
-
-		c.Writer.WriteHeader(http.StatusInternalServerError)
-		if _, err = c.Writer.WriteString(err.Error()); err != nil {
-			fmt.Println(err)
-		}
-
+		fverrors.SendErrorResponse(c, err)
 		return
 	}
 
-	if err = s.setUserInfoToSession(c, u); err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
+	err = auth.SaveUserToSession(c, user)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
 		return
 	}
 
@@ -308,31 +271,37 @@ func (s *Server) userRegisterHandler(c *gin.Context) {
 }
 
 func (s *Server) userDashboardHandler(c *gin.Context) {
-	u, err := s.getUserInfoFromSession(c)
-	if err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
+	user, err := auth.GetUserFromSession(c)
+	if (err != nil) && (!errors.Is(err, fverrors.NoLoginErr)) {
+		fverrors.SendErrorResponse(c, err)
 		return
 	}
 
-	err = execTemplate(c, &u, "webpages/dashboard.html")
-	if err != nil {
+	if !auth.CheckAuth(user, auth.Guest|auth.Db) {
+		c.Redirect(http.StatusTemporaryRedirect, "/auth/register")
+		return
+	}
+
+	if err := execTemplate(c, user, "webpages/dashboard.html"); err != nil {
 		fmt.Println(err)
 	}
 }
 
 func (s *Server) getUserStoriesHandler(c *gin.Context) {
-	stories, err := s.getStories(c.Param("username"), c.Param("visibility"), c)
-	if err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
+	user, err := auth.GetUserFromSession(c)
+	if (err != nil) && (!errors.Is(err, fverrors.NoLoginErr)) {
+		fverrors.SendErrorResponse(c, err)
 		return
 	}
 
-	c.Writer.WriteHeader(http.StatusOK)
-	if _, err := c.Writer.Write([]byte(fmt.Sprintf("%v", stories))); err != nil {
-		fmt.Println(err)
+	username, visibility := c.Param("username"), c.Query("visibility")
+	stories, err := db.GetStoriesByUser(user, username, visibility)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
 	}
+
+	c.JSON(http.StatusOK, stories)
 }
 
 func (s *Server) newStoryHandler(c *gin.Context) {

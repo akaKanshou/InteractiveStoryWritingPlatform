@@ -62,8 +62,8 @@ async function checkAndSubmit() {
     if (resp.status === 201) {
         sendTo("/")
     } else {
-        const errString = await resp.text()
-        showError([errString])
+        const errString = await resp.json()
+        showError([errString.message])
     }
 }
 

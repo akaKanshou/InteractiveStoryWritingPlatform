@@ -1,0 +1,88 @@
+package auth
+
+import (
+	"crypto/rand"
+	"encoding/gob"
+	"os"
+
+	"github.com/gin-gonic/gin"
+	_ "github.com/joho/godotenv/autoload"
+
+	"github.com/gorilla/sessions"
+
+	fverrors "forgeverse/internal/errors"
+	"forgeverse/internal/models"
+)
+
+var store *sessions.CookieStore
+
+func init() {
+	gob.Register(models.User{})
+
+	store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_SECRET")))
+	store.MaxAge(7 * 86400)
+	store.Options.Path = "/"
+	store.Options.HttpOnly = true
+	store.Options.Secure = false
+
+}
+
+type State = uint8
+
+const (
+	Guest  State = 0x1
+	Google State = 0x02
+	Db     State = 0x04
+	Admin  State = 0x08
+)
+
+func SaveUserToSession(c *gin.Context, user *models.User) fverrors.Error {
+	session, err := store.Get(c.Request, "forgeVerseSession")
+	if err != nil {
+		return fverrors.NewServerError(err)
+	}
+
+	session.Values["user"] = *user
+
+	if user.Remember {
+		session.Options.MaxAge = 86400 * 7
+	} else {
+		session.Options.MaxAge = 86400
+	}
+
+	if err := session.Save(c.Request, c.Writer); err != nil {
+		return fverrors.NewServerError(err)
+	}
+
+	return nil
+}
+
+func GetUserFromSession(c *gin.Context) (*models.User, fverrors.Error) {
+	session, err := store.Get(c.Request, "forgeVerseSession")
+	if err != nil {
+		return nil, fverrors.NewServerError(err)
+	}
+
+	userAny := session.Values["user"]
+	if userAny == nil {
+		return new(models.User{
+			Username:  "Guest" + rand.Text()[:12],
+			AuthState: Guest,
+			Remember:  true,
+		}), fverrors.NoLoginErr
+	}
+
+	return new(userAny.(models.User)), nil
+}
+
+func CheckAuth(user *models.User, authState State) bool {
+	return user.AuthState&authState > 0
+}
+
+func IsPublicAuthenticated(user *models.User) bool {
+	return CheckAuth(user, Admin|Db|Guest)
+}
+
+func IsPrivateAuthenticated(user *models.User) bool {
+	return CheckAuth(user, Admin|Db) && CheckAuth(user, Admin|Google)
+}

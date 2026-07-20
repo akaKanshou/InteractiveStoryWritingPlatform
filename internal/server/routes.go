@@ -17,6 +17,7 @@ import (
 
 //TODO: change http method of all "getter" api to GET
 //TODO: implement efficient content response with fileFromFS(potentially)
+//TODO: add location header to userRegisterHandler
 
 func (s *Server) RegisterRoutes() http.Handler {
 	r := gin.New()
@@ -55,11 +56,11 @@ func (s *Server) RegisterRoutes() http.Handler {
 	publicApi := r.Group("/api")
 	{
 		publicApi.GET("/getstories/:username", s.getUserStoriesHandler)
-		publicApi.GET("/getchapter/:chapterID", s.getChapterHandler)
+		publicApi.GET("/getchapter/:chapter_id", s.getChapterHandler)
 
-		publicApi.GET("/getstorychapters", s.getStoryChaptersHandler)
+		publicApi.GET("/getstorychapters/:story_id", s.getStoryChaptersHandler)
 
-		publicApi.POST("/getedges", s.getEdgesHandler)
+		publicApi.GET("/getedges/:chapter_id", s.getEdgesHandler)
 	}
 
 	privateApi := r.Group("/api")
@@ -276,7 +277,7 @@ func (s *Server) userDashboardHandler(c *gin.Context) {
 		return
 	}
 
-	if !auth.CheckAuth(user, auth.Guest|auth.Db) {
+	if !auth.IsPrivateAuthenticated(user) {
 		c.Redirect(http.StatusTemporaryRedirect, "/auth/register")
 		return
 	}

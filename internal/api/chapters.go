@@ -72,7 +72,7 @@ func EditChapter(c *gin.Context, user *models.User) fverrors.Error {
 }
 
 func GetChaptersByStory(user *models.User, c *gin.Context) ([]*models.Chapter, fverrors.Error) {
-	storyID := c.PostForm("story_id")
+	storyID := c.Param("story_id")
 	if err := models.ValidateStoryID(storyID); err != nil {
 		return nil, fverrors.GenericInvalidRequestErr
 	}
@@ -90,7 +90,7 @@ func GetChaptersByStory(user *models.User, c *gin.Context) ([]*models.Chapter, f
 }
 
 func GetChapterByID(user *models.User, c *gin.Context) (*models.Chapter, fverrors.Error) {
-	chapterID := c.PostForm("chapter_id")
+	chapterID := c.Param("chapter_id")
 	if err := models.ValidateChapterID(chapterID); err != nil {
 		return nil, fverrors.GenericInvalidRequestErr
 	}
@@ -108,6 +108,8 @@ func GetChapterByID(user *models.User, c *gin.Context) (*models.Chapter, fverror
 	if (story.Visibility == models.VisibilityPrivate) && (story.Username != user.Username) {
 		return nil, fverrors.UnAuthorizedErr
 	}
+
+	chapter.Content, err = db.ReadFromFile(chapter.FileID)
 
 	return chapter, err
 }
@@ -152,7 +154,7 @@ func CreateNewEdge(c *gin.Context, user *models.User) fverrors.Error {
 }
 
 func GetEdgesByChapter(user *models.User, c *gin.Context) ([]*models.Edge, fverrors.Error) {
-	chapterID := c.PostForm("chapter_id")
+	chapterID := c.Param("chapter_id")
 	if err := models.ValidateChapterID(chapterID); err != nil {
 		return nil, fverrors.GenericInvalidRequestErr
 	}

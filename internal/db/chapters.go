@@ -8,11 +8,14 @@ import (
 	"forgeverse/internal/models"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
+
+const chapterDir = "./chapters"
 
 func GetChapterByID(chapterID string) (*models.Chapter, fverrors.Error) {
 	chapter := &models.Chapter{
@@ -39,7 +42,7 @@ func GetChapterByID(chapterID string) (*models.Chapter, fverrors.Error) {
 }
 
 func WriteToFile(fileID string, content string) fverrors.Error {
-	file, err := os.OpenFile(fileID, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+	file, err := os.OpenFile(filepath.Join(chapterDir, fileID), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		return fverrors.NewServerError(err)
 	}
@@ -61,6 +64,15 @@ func WriteToFile(fileID string, content string) fverrors.Error {
 	}
 
 	return nil
+}
+
+func ReadFromFile(fileID string) (string, fverrors.Error) {
+	file, err := os.ReadFile(filepath.Join(chapterDir, fileID))
+	if err != nil {
+		return "", fverrors.NewServerError(err)
+	}
+
+	return string(file), nil
 }
 
 func InsertNewChapter(chapter *models.Chapter) fverrors.Error {

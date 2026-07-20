@@ -396,7 +396,7 @@
 			async function getStoryChapters() {
 				const storyid = document.getElementById("storyid2").value
 
-				const req = new Request("https://localhost:8080/api/getstorychapters/storyid", {
+				const req = new Request(`https://localhost:8080/api/getstorychapters/${storyid}`, {
 					method: "GET",
 				});
 
@@ -485,12 +485,8 @@
 			async function getEdges() {
 				const chapid = document.getElementById("chapterid3").value
 
-				const formdata = new FormData()
-				formdata.append("chapter_id", chapid)
-
-				const req = new Request("https://localhost:8080/api/getedges", {
-					method: "POST",
-					body: formdata
+				const req = new Request(`https://localhost:8080/api/getedges/${chapid}`, {
+					method: "GET",
 				})
 
 				const res = await fetch(req)

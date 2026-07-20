@@ -23,7 +23,7 @@ func GetChapterByID(chapterID string) (*models.Chapter, fverrors.Error) {
 	}
 
 	err := dbConn.QueryRow(context.Background(),
-		"SELECT (chapter_name, story_id, file_id) FROM chapters WHERE chapter_id=$1",
+		"SELECT chapter_name, story_id, file_id FROM chapters WHERE chapter_id=$1",
 		chapterID).Scan(
 		&chapter.ChapterName,
 		&chapter.StoryID,
@@ -119,7 +119,7 @@ func GetChaptersByStory(storyID string, page int) ([]*models.Chapter, fverrors.E
 	chapters := make([]*models.Chapter, 0, 50)
 	for rows.Next() {
 		chapter := &models.Chapter{
-			ChapterID: storyID,
+			StoryID: storyID,
 		}
 
 		err := rows.Scan(&chapter.ChapterName, &chapter.ChapterID)
@@ -157,7 +157,7 @@ func InsertNewEdge(from, to string) fverrors.Error {
 
 func GetEdgesByChapter(chapterID string) ([]*models.Edge, fverrors.Error) {
 	rows, err := dbConn.Query(context.Background(),
-		"SELECT (from_chap, to_chap) FROM edges WHERE from_chap=$1 OR to_chap=$1",
+		"SELECT from_chap, to_chap FROM edges WHERE from_chap=$1 OR to_chap=$1",
 		chapterID)
 
 	if err != nil {

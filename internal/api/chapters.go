@@ -41,7 +41,7 @@ func CreateNewChapter(c *gin.Context, user *models.User) (string, fverrors.Error
 
 func EditChapter(c *gin.Context, user *models.User) fverrors.Error {
 	chapterID := c.PostForm("chapter_id")
-	if err := models.ValidateChapterID(chapterID); err != nil {
+	if err := models.ValidateRID(chapterID); err != nil {
 		return fverrors.GenericInvalidRequestErr
 	}
 
@@ -73,7 +73,7 @@ func EditChapter(c *gin.Context, user *models.User) fverrors.Error {
 
 func GetChaptersByStory(user *models.User, c *gin.Context) ([]*models.Chapter, fverrors.Error) {
 	storyID := c.Param("story_id")
-	if err := models.ValidateStoryID(storyID); err != nil {
+	if err := models.ValidateRID(storyID); err != nil {
 		return nil, fverrors.GenericInvalidRequestErr
 	}
 
@@ -91,7 +91,7 @@ func GetChaptersByStory(user *models.User, c *gin.Context) ([]*models.Chapter, f
 
 func GetChapterByID(user *models.User, c *gin.Context) (*models.Chapter, fverrors.Error) {
 	chapterID := c.Param("chapter_id")
-	if err := models.ValidateChapterID(chapterID); err != nil {
+	if err := models.ValidateRID(chapterID); err != nil {
 		return nil, fverrors.GenericInvalidRequestErr
 	}
 
@@ -116,10 +116,10 @@ func GetChapterByID(user *models.User, c *gin.Context) (*models.Chapter, fverror
 
 func CreateNewEdge(c *gin.Context, user *models.User) fverrors.Error {
 	from, to := c.PostForm("from_chapter"), c.PostForm("to_chapter")
-	if err := models.ValidateChapterID(from); err != nil {
+	if err := models.ValidateRID(from); err != nil {
 		return fverrors.GenericInvalidRequestErr
 	}
-	if err := models.ValidateChapterID(to); err != nil {
+	if err := models.ValidateRID(to); err != nil {
 		return fverrors.GenericInvalidRequestErr
 	}
 
@@ -155,11 +155,16 @@ func CreateNewEdge(c *gin.Context, user *models.User) fverrors.Error {
 
 func GetEdgesByChapter(user *models.User, c *gin.Context) ([]*models.Edge, fverrors.Error) {
 	chapterID := c.Param("chapter_id")
-	if err := models.ValidateChapterID(chapterID); err != nil {
+	if err := models.ValidateRID(chapterID); err != nil {
 		return nil, fverrors.GenericInvalidRequestErr
 	}
 
-	story, err := db.GetStoryByID(chapterID)
+	chapter, err := db.GetChapterByID(chapterID)
+	if err != nil {
+		return nil, err
+	}
+
+	story, err := db.GetStoryByID(chapter.StoryID)
 	if err != nil {
 		return nil, err
 	}

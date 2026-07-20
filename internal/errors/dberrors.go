@@ -23,5 +23,5 @@ func (e *DBError) Code() int {
 }
 
 func (e *DBError) Error() string {
-	return e.responseError
+	return e.underlyingError.Error()
 }

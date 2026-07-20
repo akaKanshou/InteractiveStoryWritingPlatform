@@ -342,7 +342,7 @@ func (s *Server) editStoryHandler(c *gin.Context) {
 		return
 	}
 
-	c.Writer.WriteHeader(http.StatusCreated)
+	c.Writer.WriteHeader(http.StatusOK)
 }
 
 func (s *Server) newChapterHandler(c *gin.Context) {

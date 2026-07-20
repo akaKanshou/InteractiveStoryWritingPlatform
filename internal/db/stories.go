@@ -16,7 +16,7 @@ import (
 func GetStoriesByUser(username string, visibilityVal models.StoryVisibility) ([]models.Story, fverrors.Error) {
 	rows, pgErr := dbConn.Query(context.Background(),
 		`SELECT story_id, story_name, 
-description FROM stories WHERE username=$1 AND visibility&$2>0 LIMIT 50 OFFSET 0`,
+description, visibility FROM stories WHERE username=$1 AND visibility&$2>0 LIMIT 50 OFFSET 0`,
 		username, visibilityVal)
 
 	if pgErr != nil {
@@ -31,7 +31,7 @@ description FROM stories WHERE username=$1 AND visibility&$2>0 LIMIT 50 OFFSET 0
 			Username: username,
 		}
 
-		if err := rows.Scan(&story.StoryID, &story.StoryName, &story.Description); err != nil {
+		if err := rows.Scan(&story.StoryID, &story.StoryName, &story.Description, &story.Visibility); err != nil {
 			return nil, fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred.", err)
 		}
 

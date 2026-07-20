@@ -9,7 +9,7 @@ import (
 
 var (
 	usernameRegex  *regexp.Regexp
-	storyIDRegex   *regexp.Regexp
+	rIDRegex       *regexp.Regexp
 	chapterIDRegex *regexp.Regexp
 )
 
@@ -21,7 +21,7 @@ func init() {
 		panic(err)
 	}
 
-	storyIDRegex, err = regexp.Compile("^[A-Z0-9]{15}$")
+	rIDRegex, err = regexp.Compile("^[A-Z0-9]{15}$")
 	if err != nil {
 		panic(err)
 	}
@@ -40,17 +40,9 @@ func ValidateUsername(username string) fverrors.Error {
 	return nil
 }
 
-func ValidateStoryID(storyID string) fverrors.Error {
-	if !storyIDRegex.MatchString(storyID) {
-		return fverrors.NewInvalidRequestError("Invalid username.", errors.New("failed regex: models.storyIDRegex"))
-	}
-
-	return nil
-}
-
-func ValidateChapterID(chapterID string) fverrors.Error {
-	if !chapterIDRegex.MatchString(chapterID) {
-		return fverrors.NewInvalidRequestError("Invalid chapter ID.", errors.New("failed regex: models.chapterIDRegex"))
+func ValidateRID(rID string) fverrors.Error {
+	if !rIDRegex.MatchString(rID) {
+		return fverrors.NewInvalidRequestError("Invalid ID.", errors.New("failed regex: models.rIDRegex"))
 	}
 
 	return nil

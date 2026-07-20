@@ -56,7 +56,7 @@ func CreateNewStory(c *gin.Context, user *models.User) (string, fverrors.Error) 
 
 func EditStory(c *gin.Context, user *models.User) fverrors.Error {
 	storyID := c.PostForm("story_id")
-	if err := models.ValidateStoryID(storyID); err != nil {
+	if err := models.ValidateRID(storyID); err != nil {
 		return err
 	}
 

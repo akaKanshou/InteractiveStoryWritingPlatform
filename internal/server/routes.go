@@ -15,7 +15,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-//TODO: change http method of all "getter" api to GET
 //TODO: implement efficient content response with fileFromFS(potentially)
 //TODO: add location header to userRegisterHandler
 
@@ -209,7 +208,7 @@ func (s *Server) loginHandler(c *gin.Context) {
 	}
 
 	if err == nil {
-		if auth.CheckAuth(user, AuthDB) {
+		if auth.CheckAuth(user, auth.Db) {
 			c.Redirect(http.StatusTemporaryRedirect, "/")
 			return
 		}
@@ -233,7 +232,7 @@ func (s *Server) userCreateHandler(c *gin.Context) {
 		return
 	}
 
-	if auth.CheckAuth(user, AuthDB) {
+	if auth.CheckAuth(user, auth.Db) {
 		c.Redirect(http.StatusTemporaryRedirect, "/")
 		return
 	}

@@ -28,6 +28,8 @@ type Server struct {
 	PgConn *pgx.Conn
 }
 
+const HomeURL = "https://localhost:8080"
+
 func init() {
 	gob.Register(User{})
 }

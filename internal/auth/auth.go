@@ -30,10 +30,11 @@ func init() {
 type State = uint8
 
 const (
-	Guest  State = 0x1
-	Google State = 0x02
-	Db     State = 0x04
-	Admin  State = 0x08
+	NoAccess State = 0x1
+	Guest    State = 0x2
+	Google   State = 0x04
+	Db       State = 0x08
+	Admin    State = 0x10
 )
 
 func SaveUserToSession(c *gin.Context, user *models.User) fverrors.Error {
@@ -80,9 +81,17 @@ func CheckAuth(user *models.User, authState State) bool {
 }
 
 func IsPublicAuthenticated(user *models.User) bool {
+	if CheckAuth(user, NoAccess) {
+		return false
+	}
+
 	return CheckAuth(user, Admin|Db|Guest)
 }
 
 func IsPrivateAuthenticated(user *models.User) bool {
-	return CheckAuth(user, Admin|Db) && CheckAuth(user, Admin|Google)
+	if CheckAuth(user, NoAccess) {
+		return false
+	}
+
+	return CheckAuth(user, Admin|Db)
 }

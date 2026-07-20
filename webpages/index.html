@@ -78,8 +78,8 @@
 				<input type="text" id="storydesc" />
 				<label for="visibility">Visibility: </label>
 				<select id="visibility">
-					<option value="0" selected>Private</option>
-					<option value="1">Public</option>
+					<option value="private" selected>Private</option>
+					<option value="public">Public</option>
 				</select>
 
 				<label for="storyid">Story ID: </label>
@@ -292,7 +292,13 @@
 				);
 
 				const resp = await fetch(req);
-				document.getElementById("stories").textContent = await resp.text();
+				const jsonRes = await resp.json()
+
+				if (resp.status === 200) {
+					document.getElementById("stories").textContent = JSON.stringify(jsonRes);
+				} else {
+					document.getElementById("stories").textContent = jsonRes.message;
+				}
 			}
 		</script>
 
@@ -315,7 +321,8 @@
 				});
 
 				const resp = await fetch(req);
-				document.getElementById("storyresult").textContent = await resp.text();
+				const jsonRes = await resp.json()
+				document.getElementById("chapterresult2").textContent = JSON.stringify(jsonRes);
 			}
 		</script>
 
@@ -346,7 +353,8 @@
 				});
 
 				const resp = await fetch(req);
-				document.getElementById("chapterresult").textContent = await resp.text();
+				const jsonRes = await resp.json()
+				document.getElementById("chapterresult2").textContent = JSON.stringify(jsonRes);
 			}
 		</script>
 
@@ -377,7 +385,8 @@
 				});
 
 				const resp = await fetch(req);
-				document.getElementById("chapterresult").textContent = await resp.text();
+				const jsonRes = await resp.json()
+				document.getElementById("chapterresult2").textContent = JSON.stringify(jsonRes);
 			}
 		</script>
 
@@ -387,16 +396,13 @@
 			async function getStoryChapters() {
 				const storyid = document.getElementById("storyid2").value
 
-				const formdata = new FormData();
-				formdata.append("story_id", storyid);
-
-				const req = new Request("https://localhost:8080/api/getstorychapters", {
-					method: "POST",
-					body: formdata,
+				const req = new Request("https://localhost:8080/api/getstorychapters/storyid", {
+					method: "GET",
 				});
 
 				const resp = await fetch(req);
-				document.getElementById("chapterresult2").textContent = await resp.text();
+				const jsonRes = await resp.json()
+				document.getElementById("chapterresult2").textContent = JSON.stringify(jsonRes);
 			}
 
 			async function getChapter() {
@@ -472,7 +478,8 @@
 				})
 
 				const res = await fetch(req)
-				document.getElementById("edgeresult").textContent = await res.text()
+				const jsonRes = await res.json()
+				document.getElementById("chapterresult2").textContent = JSON.stringify(jsonRes);
 			}
 
 			async function getEdges() {
@@ -487,7 +494,8 @@
 				})
 
 				const res = await fetch(req)
-				document.getElementById("edgeresult").textContent = await res.text()
+				const jsonRes = await res.json()
+				document.getElementById("chapterresult2").textContent = JSON.stringify(jsonRes);
 			}
 		</script>
 	</body>

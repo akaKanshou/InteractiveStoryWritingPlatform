@@ -14,7 +14,8 @@ import (
 
 func GetUserByID(userID string) (*models.User, fverrors.Error) {
 	user := &models.User{
-		UserID: userID,
+		UserID:    userID,
+		AuthState: auth.NoAccess,
 	}
 
 	err := dbConn.QueryRow(context.Background(), `SELECT username FROM users WHERE user_id=$1`,
@@ -26,7 +27,6 @@ func GetUserByID(userID string) (*models.User, fverrors.Error) {
 		return nil, fverrors.NewServerError(err)
 	}
 
-	user.AuthState |= auth.Db
 	return user, nil
 }
 
@@ -39,6 +39,7 @@ func RegisterUser(user *models.User) (*models.User, fverrors.Error) {
 		user.Username, user.Email, user.UserID)
 
 	if err == nil {
+		user.AuthState |= auth.Db
 		return user, nil
 	}
 
@@ -47,4 +48,24 @@ func RegisterUser(user *models.User) (*models.User, fverrors.Error) {
 	}
 
 	return nil, fverrors.NewServerError(err)
+}
+
+func GetUserByUsername(username string) (*models.User, fverrors.Error) {
+	if err := models.ValidateUsername(username); err != nil {
+		return nil, err
+	}
+
+	user := &models.User{
+		Username:  username,
+		AuthState: auth.NoAccess,
+	}
+
+	err := dbConn.QueryRow(context.Background(), `SELECT username FROM users WHERE username=$1`, username).Scan(&user.Username)
+	if (err != nil) && (errors.Is(err, pgx.ErrNoRows)) {
+		return nil, fverrors.UserNotFoundError
+	} else if err != nil {
+		return nil, fverrors.NewServerError(err)
+	}
+
+	return user, nil
 }

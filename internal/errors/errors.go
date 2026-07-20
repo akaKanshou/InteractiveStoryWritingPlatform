@@ -26,12 +26,16 @@ func SendErrorResponse(c *gin.Context, err Error) {
 }
 
 var (
-	NoLoginErr      = NewAuthError("User is not logged in.", errors.New("user is not logged in"))
-	UnAuthorizedErr = NewAuthError("User does not have access to this resource.",
+	NoLoginErr      = NewAuthError("User is not logged in", errors.New("user is not logged in"))
+	UnAuthorizedErr = NewAuthError("User does not have access to this resource",
 		errors.New("user is not authorized"))
 
-	UsernameInUseError = NewDBError(http.StatusBadRequest, "Username is already in use",
+	GenericInvalidRequestErr = NewAuthError("Invalid request parameters", errors.New("invalid request"))
+
+	UsernameInUseError = NewDBError(http.StatusUnprocessableEntity, "Username is already in use",
 		fmt.Errorf("DB Error: %v", pgerrcode.UniqueViolation))
-	UserNotFoundError = NewDBError(http.StatusBadRequest, "Username is already in use",
+	UserNotFoundError = NewDBError(http.StatusNotFound, "No such user exists",
 		pgx.ErrNoRows)
+	StoryNotFoundError   = NewDBError(http.StatusNotFound, "No such story exists", pgx.ErrNoRows)
+	ChapterNotFoundError = NewDBError(http.StatusNotFound, "No such chapter exists", pgx.ErrNoRows)
 )

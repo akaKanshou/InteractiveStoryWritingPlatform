@@ -2,27 +2,25 @@ package db
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	fverrors "forgeverse/internal/errors"
 	"forgeverse/internal/models"
 	"net/http"
+
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
-func GetStoriesByUser(user *models.User, username, visibility string) ([]models.Story, fverrors.Error) {
-	if err := models.ValidateUsername(username); err != nil {
-		return nil, err
-	}
-
-	visibilityVal, err := models.ValidateVisibility(visibility)
-	if err != nil {
-		return nil, err
-	}
-
+func GetStoriesByUser(username string, visibilityVal models.StoryVisibility) ([]models.Story, fverrors.Error) {
 	rows, pgErr := dbConn.Query(context.Background(),
-		`SELECT story_id, story_name, description FROM stories WHERE username=$1 AND visibility=$2 LIMIT 50 OFFSET 0`,
+		`SELECT story_id, story_name, 
+description FROM stories WHERE username=$1 AND visibility&$2>0 LIMIT 50 OFFSET 0`,
 		username, visibilityVal)
 
 	if pgErr != nil {
-		return nil, fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred.", err)
+		return nil, fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred.", pgErr)
 	}
 
 	defer rows.Close()
@@ -47,7 +45,60 @@ func GetStoriesByUser(user *models.User, username, visibility string) ([]models.
 	return stories, nil
 }
 
-func InsertNewStory(story *models.Story) (string, error) {
+func GetStoryByID(storyID string) (*models.Story, fverrors.Error) {
+	story := &models.Story{
+		StoryID: storyID,
+	}
 
-	return story.StoryID, nil
+	pgErr := dbConn.QueryRow(context.Background(),
+		"SELECT username, story_name, description, visibility FROM stories WHERE story_id = $1",
+		storyID).Scan(
+		&story.Username,
+		&story.StoryName,
+		&story.Description,
+		&story.Visibility,
+	)
+	if pgErr != nil && errors.Is(pgErr, pgx.ErrNoRows) {
+		return nil, fverrors.StoryNotFoundError
+	} else if pgErr != nil {
+		return nil, fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred.", pgErr)
+	}
+
+	return story, nil
+}
+
+func InsertNewStory(storyName, storyDescription, storyID string, visibility models.StoryVisibility,
+	user *models.User) (string,
+	fverrors.Error) {
+	_, err := dbConn.Exec(context.Background(),
+		`INSERT INTO stories (story_name, description, visibility, username, story_id) VALUES ($1, $2, $3,$4 ,$5)`,
+		storyName, storyDescription, visibility, user.Username, storyID)
+
+	if err == nil {
+		return storyID, nil
+	}
+
+	if pgErr, okay := errors.AsType[*pgconn.PgError](err); okay && (pgErr.Code == pgerrcode.UniqueViolation) {
+		return "", fverrors.NewDBError(http.StatusUnprocessableEntity,
+			fmt.Sprintf("User already has a story named %s", storyName),
+			pgErr)
+	} else if okay && (pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) || pgerrcode.IsDataException(pgErr.Code)) {
+		return "", fverrors.GenericInvalidRequestErr
+	}
+
+	return "", fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred.", err)
+}
+
+func UpdateStory(story *models.Story) fverrors.Error {
+	_, err := dbConn.Exec(context.Background(),
+		"UPDATE stories SET description=$1, visibility=$2, story_name=$3 WHERE story_id=$4",
+		story.Description, story.Visibility, story.StoryName, story.StoryID)
+
+	if pgErr, okay := errors.AsType[*pgconn.PgError](err); okay && (pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) || pgerrcode.IsDataException(pgErr.Code)) {
+		return fverrors.GenericInvalidRequestErr
+	} else if err != nil {
+		return fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred.", err)
+	}
+
+	return nil
 }

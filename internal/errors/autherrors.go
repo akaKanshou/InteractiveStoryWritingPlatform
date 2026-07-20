@@ -45,23 +45,23 @@ func (e *ServerError) ResponseError() string {
 	return "An unexpected error occurred."
 }
 
-type BadRequestError struct {
+type InvalidRequestError struct {
 	responseError   string
 	underlyingError error
 }
 
-func NewBadRequestError(responseError string, underlyingError error) *BadRequestError {
-	return &BadRequestError{responseError, underlyingError}
+func NewInvalidRequestError(responseError string, underlyingError error) *InvalidRequestError {
+	return &InvalidRequestError{responseError, underlyingError}
 }
 
-func (b *BadRequestError) Error() string {
+func (b *InvalidRequestError) Error() string {
 	return b.underlyingError.Error()
 }
 
-func (b *BadRequestError) ResponseError() string {
+func (b *InvalidRequestError) ResponseError() string {
 	return b.responseError
 }
 
-func (b *BadRequestError) Code() int {
-	return http.StatusBadRequest
+func (b *InvalidRequestError) Code() int {
+	return http.StatusUnprocessableEntity
 }

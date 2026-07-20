@@ -1,22 +1,22 @@
 package server
 
 import (
-	"crypto/rand"
 	"errors"
 	"fmt"
+	"forgeverse/internal/api"
 	"forgeverse/internal/auth"
 	"forgeverse/internal/db"
 	fverrors "forgeverse/internal/errors"
 	"forgeverse/internal/models"
 	"html/template"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
-//TODO: change path params to postform params in getstories/user/
+//TODO: change http method of all "getter" api to GET
+//TODO: implement efficient content response with fileFromFS(potentially)
 
 func (s *Server) RegisterRoutes() http.Handler {
 	r := gin.New()
@@ -47,7 +47,6 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	// user routes
 	userGroup := r.Group("/user")
-	userGroup.Use(s.authCheck())
 	{
 		userGroup.GET("/mystories", s.userDashboardHandler)
 	}
@@ -58,13 +57,12 @@ func (s *Server) RegisterRoutes() http.Handler {
 		publicApi.GET("/getstories/:username", s.getUserStoriesHandler)
 		publicApi.GET("/getchapter/:chapterID", s.getChapterHandler)
 
-		publicApi.POST("/getstorychapters", s.getStoryChaptersHandler)
+		publicApi.GET("/getstorychapters", s.getStoryChaptersHandler)
 
 		publicApi.POST("/getedges", s.getEdgesHandler)
 	}
 
 	privateApi := r.Group("/api")
-	privateApi.Use(s.authCheck())
 	{
 		privateApi.POST("/newstory", s.newStoryHandler)
 		privateApi.POST("/editstory", s.editStoryHandler)
@@ -147,6 +145,7 @@ func (s *Server) authGoogleCallbackHandler(c *gin.Context) {
 		return
 	}
 
+	user.AuthState = auth.Google | auth.Db
 	if err = auth.SaveUserToSession(c, user); err != nil {
 		fverrors.SendErrorResponse(c, err)
 		return
@@ -294,202 +293,160 @@ func (s *Server) getUserStoriesHandler(c *gin.Context) {
 		return
 	}
 
-	username, visibility := c.Param("username"), c.Query("visibility")
-	stories, err := db.GetStoriesByUser(user, username, visibility)
+	stories, err := api.GetStoriesByUser(user, c)
 	if err != nil {
 		fverrors.SendErrorResponse(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, stories)
+	c.JSON(http.StatusOK, gin.H{
+		"stories": stories,
+	})
 }
 
 func (s *Server) newStoryHandler(c *gin.Context) {
-	story := Story{
-		StoryID:     rand.Text()[:15],
-		StoryName:   c.PostForm("story_name"),
-		Description: c.PostForm("description"),
-		Visibility:  -1,
-	}
-
-	if visStr := c.PostForm("visibility"); visStr != "" {
-		vis, err := strconv.Atoi(visStr[:1])
-		if err != nil {
-			fmt.Println(err)
-			c.Writer.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		story.Visibility = vis
-	}
-
-	storyID, err := s.newStory(c, &story)
-
+	user, err := auth.GetUserFromSession(c)
 	if err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
-		if _, err := c.Writer.Write([]byte(err.Error())); err != nil {
-			fmt.Println(err)
-		}
+		fverrors.SendErrorResponse(c, err)
+		return
+	} else if !auth.IsPrivateAuthenticated(user) {
+		fverrors.SendErrorResponse(c, fverrors.UnAuthorizedErr)
 		return
 	}
 
-	c.Writer.WriteHeader(http.StatusCreated)
-	if _, err := c.Writer.Write([]byte(storyID)); err != nil {
-		fmt.Println(err)
+	storyID, err := api.CreateNewStory(c, user)
+
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
 	}
+
+	c.Header("Location", fmt.Sprintf("%s/story/%s", HomeURL, storyID))
+	c.JSON(http.StatusCreated, gin.H{"story_id": storyID})
 }
 
 func (s *Server) editStoryHandler(c *gin.Context) {
-	story := Story{
-		StoryID:     c.PostForm("story_id"),
-		StoryName:   c.PostForm("story_name"),
-		Description: c.PostForm("description"),
-		Visibility:  -1,
-	}
-
-	if visStr := c.PostForm("visibility"); visStr != "" {
-		vis, err := strconv.Atoi(visStr[:1])
-		if err != nil {
-			fmt.Println(err)
-			c.Writer.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		story.Visibility = vis
-	}
-
-	if err := s.editStory(c, &story); err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
-		if _, err = c.Writer.WriteString(err.Error()); err != nil {
-			fmt.Println(err)
-		}
+	user, err := auth.GetUserFromSession(c)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	} else if !auth.IsPrivateAuthenticated(user) {
+		fverrors.SendErrorResponse(c, fverrors.UnAuthorizedErr)
 		return
 	}
 
-	c.Writer.WriteHeader(http.StatusOK)
-	if _, err := c.Writer.WriteString("Story edited!"); err != nil {
-		fmt.Println(err)
+	err = api.EditStory(c, user)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
 	}
+
+	c.Writer.WriteHeader(http.StatusCreated)
 }
 
 func (s *Server) newChapterHandler(c *gin.Context) {
-	chapter := Chapter{
-		ChapterID:   rand.Text()[:15],
-		ChapterName: c.PostForm("chapter_name"),
-		FileID:      rand.Text()[:15],
-		StoryID:     c.PostForm("story_id"),
-	}
-
-	chapterID, err := s.newChapter(c, &chapter, c.PostForm("content"))
-
+	user, err := auth.GetUserFromSession(c)
 	if err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
-		if _, err := c.Writer.Write([]byte(err.Error())); err != nil {
-			fmt.Println(err)
-		}
+		fverrors.SendErrorResponse(c, err)
+		return
+	} else if !auth.IsPrivateAuthenticated(user) {
+		fverrors.SendErrorResponse(c, fverrors.UnAuthorizedErr)
 		return
 	}
 
-	c.Writer.WriteHeader(http.StatusCreated)
-	if _, err := c.Writer.Write([]byte(chapterID)); err != nil {
-		fmt.Println(err)
+	chapterID, err := api.CreateNewChapter(c, user)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
 	}
+
+	c.Header("Location", fmt.Sprintf("%s/chapter/%s", HomeURL, chapterID))
+	c.JSON(http.StatusCreated, gin.H{"chapter_id": chapterID})
 }
 
 func (s *Server) editChapterHandler(c *gin.Context) {
-	chapter := &Chapter{
-		ChapterID:   c.PostForm("chapter_id"),
-		ChapterName: c.PostForm("chapter_name"),
+	user, err := auth.GetUserFromSession(c)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	} else if !auth.IsPrivateAuthenticated(user) {
+		fverrors.SendErrorResponse(c, fverrors.UnAuthorizedErr)
+		return
 	}
 
-	if err := s.editChapter(c, chapter, c.PostForm("content")); err != nil {
-		fmt.Println(err)
+	err = api.EditChapter(c, user)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
 	}
 
-	c.Writer.WriteHeader(http.StatusOK)
-	if _, err := c.Writer.WriteString("Chapter edited!"); err != nil {
-		fmt.Println(err)
-	}
+	c.JSON(http.StatusCreated, gin.H{})
 }
 
 func (s *Server) getStoryChaptersHandler(c *gin.Context) {
-	chapters, err := s.getStoryChapters(c.PostForm("story_id"), c)
+	user, err := auth.GetUserFromSession(c)
+	if err != nil && !errors.Is(err, fverrors.NoLoginErr) {
+		fverrors.SendErrorResponse(c, err)
+		return
+	} else if !auth.IsPublicAuthenticated(user) {
+		fverrors.SendErrorResponse(c, fverrors.UnAuthorizedErr)
+	}
+
+	chapters, err := api.GetChaptersByStory(user, c)
 	if err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
+		fverrors.SendErrorResponse(c, err)
 		return
 	}
 
-	c.Writer.WriteHeader(http.StatusOK)
-	if _, err := c.Writer.WriteString(fmt.Sprintf("%d chapters: %v", len(chapters), chapters)); err != nil {
-		fmt.Println(err)
-	}
+	c.JSON(http.StatusOK, gin.H{"chapters": chapters})
 }
 
 func (s *Server) getChapterHandler(c *gin.Context) {
-	chapter, err := s.getChapterWithContent(c.Param("chapterID"), c)
-
-	if err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
+	user, err := auth.GetUserFromSession(c)
+	if err != nil && !errors.Is(err, fverrors.NoLoginErr) {
+		fverrors.SendErrorResponse(c, err)
 		return
+	} else if !auth.IsPublicAuthenticated(user) {
+		fverrors.SendErrorResponse(c, fverrors.UnAuthorizedErr)
 	}
 
-	c.JSON(http.StatusOK, chapter)
+	chapter, err := api.GetChapterByID(user, c)
+
+	c.JSON(http.StatusOK, gin.H{"chapter": chapter})
 }
 
 func (s *Server) addEdgeHandler(c *gin.Context) {
-	from, to := c.PostForm("from_chapter"), c.PostForm("to_chapter")
-
-	u, err := s.getUserInfoFromSession(c)
+	user, err := auth.GetUserFromSession(c)
 	if err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
+		fverrors.SendErrorResponse(c, err)
+		return
+	} else if !auth.IsPrivateAuthenticated(user) {
+		fverrors.SendErrorResponse(c, fverrors.UnAuthorizedErr)
 		return
 	}
 
-	err = s.checkEdge(from, to, &u)
-	if err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
-		_, err := c.Writer.WriteString(err.Error())
-		if err != nil {
-			fmt.Println(err)
-		}
-		return
-	}
-
-	err = s.addEdge(from, to)
-
-	if err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
-		_, err := c.Writer.WriteString(err.Error())
-		if err != nil {
-			fmt.Println(err)
-		}
+	if err := api.CreateNewEdge(c, user); err != nil {
+		fverrors.SendErrorResponse(c, err)
 		return
 	}
 
 	c.Writer.WriteHeader(http.StatusCreated)
-	if _, err := c.Writer.WriteString("Edge added!"); err != nil {
-		fmt.Println(err)
-	}
 }
 
 func (s *Server) getEdgesHandler(c *gin.Context) {
-	chapterID := c.PostForm("chapter_id")
+	user, err := auth.GetUserFromSession(c)
+	if err != nil && !errors.Is(err, fverrors.NoLoginErr) {
+		fverrors.SendErrorResponse(c, err)
+		return
+	} else if !auth.IsPublicAuthenticated(user) {
+		fverrors.SendErrorResponse(c, fverrors.UnAuthorizedErr)
+	}
 
-	edges, err := s.getAllEdges(chapterID)
+	edges, err := api.GetEdgesByChapter(user, c)
 	if err != nil {
-		fmt.Println(err)
-		c.Writer.WriteHeader(http.StatusInternalServerError)
+		fverrors.SendErrorResponse(c, err)
 		return
 	}
 
-	c.Writer.WriteHeader(http.StatusOK)
-	if _, err := c.Writer.WriteString(fmt.Sprintf("%d edges: %v", len(edges), edges)); err != nil {
-		fmt.Println(err)
-	}
+	c.JSON(http.StatusOK, gin.H{"edges": edges})
 }

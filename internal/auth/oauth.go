@@ -62,7 +62,7 @@ func GoogleOAuthCallback(c *gin.Context) fverrors.Error {
 	code, stateString := c.Query("code"), c.Query("state")
 
 	if session.Values["state"] != stateString {
-		return fverrors.NewBadRequestError("state of callback does not match", errors.New("invalid state"))
+		return fverrors.NewInvalidRequestError("state of callback does not match", errors.New("invalid state"))
 	}
 
 	token, err := googleOAuthConfig.Exchange(c.Request.Context(), code)
@@ -84,7 +84,7 @@ func GoogleOAuthCallback(c *gin.Context) fverrors.Error {
 		return fverrors.NewServerError(err)
 	}
 
-	user.AuthState |= Google
+	user.AuthState = Google
 	user.Remember = session.Values["remember"].(bool)
 
 	if err := SaveUserToSession(c, user); err != nil {

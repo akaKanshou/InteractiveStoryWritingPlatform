@@ -26,3 +26,7 @@ func init() {
 		panic(err)
 	}
 }
+
+func Close() error {
+	return dbConn.Close(context.Background())
+}

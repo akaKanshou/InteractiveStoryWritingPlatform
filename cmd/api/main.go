@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"forgeverse/internal/db"
 	"log"
 	"net/http"
 	"os/signal"
@@ -25,7 +26,7 @@ func gracefulShutdown(apiServer *server.Server, done chan bool) {
 	log.Println("shutting down gracefully, press Ctrl+C again to force")
 	stop() // Allow Ctrl+C to force shutdown
 
-	if err := apiServer.PgConn.Close(context.Background()); err != nil {
+	if err := db.Close(); err != nil {
 		log.Printf("Error closing DB Connection: %v", err)
 	}
 

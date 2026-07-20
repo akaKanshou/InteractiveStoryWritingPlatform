@@ -453,10 +453,10 @@
 							console.log("EditorJS is ready");
 						},
 
-						data: JSON.parse(resultvalue.content)
+						data: JSON.parse(resultvalue.chapter.content)
 					})
 
-					document.getElementById("chapterresult2").textContent = resultvalue.chapter_name
+					document.getElementById("chapterresult2").textContent = resultvalue.chapter.chapter_name
 				} else {
 					console.log(resultvalue)
 				}

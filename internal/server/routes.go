@@ -100,6 +100,11 @@ func execTemplate(c *gin.Context, data any, filenames ...string) error {
 	return nil
 }
 
+/*
+	GET /auth/logout
+
+Description: Logout endpoint
+*/
 func (s *Server) logoutHandler(c *gin.Context) {
 	err := auth.Logout(c)
 	if err != nil {
@@ -110,6 +115,11 @@ func (s *Server) logoutHandler(c *gin.Context) {
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
 
+/*
+	GET /auth/google/callback
+
+Description: Google OAuth callback endpoint
+*/
 func (s *Server) authGoogleCallbackHandler(c *gin.Context) {
 	var err fverrors.Error
 
@@ -154,6 +164,11 @@ func (s *Server) authGoogleCallbackHandler(c *gin.Context) {
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
 
+/*
+	GET /auth/google
+
+Description: Google OAuth init endpoint
+*/
 func (s *Server) authGoogleHandler(c *gin.Context) {
 	var err fverrors.Error
 
@@ -182,6 +197,11 @@ func (s *Server) authGoogleHandler(c *gin.Context) {
 	http.Redirect(c.Writer, c.Request, oAuthReqUrl, http.StatusTemporaryRedirect)
 }
 
+/*
+	GET /
+
+Description: Homepage endpoint
+*/
 func (s *Server) helloWorldHandler(c *gin.Context) {
 	u, err := auth.GetUserFromSession(c)
 	if err != nil && !errors.Is(err, fverrors.NoLoginErr) {
@@ -198,6 +218,11 @@ func (s *Server) helloWorldHandler(c *gin.Context) {
 	}
 }
 
+/*
+	GET /auth/login
+
+Description: Login page endpoint
+*/
 func (s *Server) loginHandler(c *gin.Context) {
 	var err fverrors.Error
 
@@ -222,6 +247,11 @@ func (s *Server) loginHandler(c *gin.Context) {
 	}
 }
 
+/*
+	GET /user/register
+
+Description: User registration endpoint
+*/
 func (s *Server) userCreateHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if (err != nil) && (errors.Is(err, fverrors.NoLoginErr)) {
@@ -242,6 +272,19 @@ func (s *Server) userCreateHandler(c *gin.Context) {
 	}
 }
 
+/*
+	POST /user/register
+
+Description: Post username on this endpoint to try to register the user
+
+Form Data:
+
+	username = Username to register. Valid regex: [a-z0-9_]{3,18}
+
+Returns:
+
+	If successful: Status code 201.
+*/
 func (s *Server) userRegisterHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if (err != nil) && (errors.Is(err, fverrors.NoLoginErr)) {
@@ -269,6 +312,11 @@ func (s *Server) userRegisterHandler(c *gin.Context) {
 	c.Writer.WriteHeader(http.StatusCreated)
 }
 
+/*
+	GET /user/mystories
+
+Description: Show currently logged-in user's stories
+*/
 func (s *Server) userMyStoriesHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if (err != nil) && (!errors.Is(err, fverrors.NoLoginErr)) {
@@ -286,6 +334,30 @@ func (s *Server) userMyStoriesHandler(c *gin.Context) {
 	}
 }
 
+/*
+	GET /api/getstories/:username
+
+Description: Get stories by the specified user of the specified visibility
+
+Queries:
+
+	visibility = public | private | all
+
+Returns:
+
+	If successful:
+	{
+		stories: [
+			{
+				story_name:	string
+				story_id:	string
+				description:	string
+				visibility:	int
+				username:	string
+			}
+		]
+	}
+*/
 func (s *Server) getUserStoriesHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if (err != nil) && (!errors.Is(err, fverrors.NoLoginErr)) {
@@ -304,6 +376,11 @@ func (s *Server) getUserStoriesHandler(c *gin.Context) {
 	})
 }
 
+/*
+	GET /api/getmystories
+
+Description: Shortcut for /api/getstories/<logged-in user>. Fails if user is not logged in.
+*/
 func (s *Server) getMyStoriesHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if (err != nil) && (!errors.Is(err, fverrors.NoLoginErr)) {
@@ -326,6 +403,24 @@ func (s *Server) getMyStoriesHandler(c *gin.Context) {
 	})
 }
 
+/*
+	POST /api/newstory
+
+Description: Create new empty story.
+
+Form Data:
+
+	story_name:	string
+	description:	string
+	visibility:	string
+
+Returns:
+
+	If successful:
+	{
+		story_id:	string
+	}
+*/
 func (s *Server) newStoryHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if err != nil {
@@ -347,6 +442,22 @@ func (s *Server) newStoryHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"story_id": storyID})
 }
 
+/*
+	POST /api/editstory
+
+Description: Edit existing story.
+
+Form Data:
+
+	story_id:	string
+	story_name:	string
+	description:	string
+	visibility:	string
+
+Returns:
+
+	If successful, Status code 200
+*/
 func (s *Server) editStoryHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if err != nil {
@@ -366,6 +477,24 @@ func (s *Server) editStoryHandler(c *gin.Context) {
 	c.Writer.WriteHeader(http.StatusOK)
 }
 
+/*
+	POST /api/newchapter
+
+Description: Create new chapter with specified contents.
+
+Form Data:
+
+	chapter_name:	string
+	story_id:	string
+	content:	string
+
+Returns:
+
+	If successful:
+	{
+		chapter_id:	string
+	}
+*/
 func (s *Server) newChapterHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if err != nil {
@@ -386,6 +515,21 @@ func (s *Server) newChapterHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"chapter_id": chapterID})
 }
 
+/*
+	POST /api/editchapter
+
+Description: Create new chapter with specified contents.
+
+Form Data:
+
+	chapter_id:	string
+	chapter_name:	string
+	content:	string
+
+Returns:
+
+	If successful, Status code 200
+*/
 func (s *Server) editChapterHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if err != nil {
@@ -402,9 +546,28 @@ func (s *Server) editChapterHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{})
+	c.JSON(http.StatusOK, gin.H{})
 }
 
+/*
+	GET /api/getstorychapters/:story_id
+
+Description: Get metadata chapters of a given story. Content is not included in response.
+
+Returns:
+
+	If successful:
+
+		{
+			chapters: [
+				{
+					chapter_name:	string
+					chapter_id:	string
+					story_id:	string
+				}
+			]
+		}
+*/
 func (s *Server) getStoryChaptersHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if err != nil && !errors.Is(err, fverrors.NoLoginErr) {
@@ -423,6 +586,26 @@ func (s *Server) getStoryChaptersHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"chapters": chapters})
 }
 
+/*
+	GET /api/getchapter/:chapter_id
+
+Description: Get specifier chapter, along with its contents.
+
+Returns:
+
+	If successful:
+
+		{
+			chapters: [
+				{
+					chapter_name:	string
+					chapter_id:	string
+					story_id:	string
+					content:	string
+				}
+			]
+		}
+*/
 func (s *Server) getChapterHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if err != nil && !errors.Is(err, fverrors.NoLoginErr) {
@@ -437,6 +620,15 @@ func (s *Server) getChapterHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"chapter": chapter})
 }
 
+/*
+	POST /api/addedge
+
+Description: Add a new edge between chapters.
+
+Returns:
+
+	If successful, Status 201
+*/
 func (s *Server) addEdgeHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if err != nil {
@@ -455,6 +647,24 @@ func (s *Server) addEdgeHandler(c *gin.Context) {
 	c.Writer.WriteHeader(http.StatusCreated)
 }
 
+/*
+	GET /api/getedge/:chapter_id
+
+Description: Gets all incoming and outgoing edges of specified chapter
+
+Returns:
+
+	If successful:
+
+	{
+		edges: [
+			{
+				from_chapter:	string
+				to_chapter:	string
+			}
+		]
+	}
+*/
 func (s *Server) getEdgesHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if err != nil && !errors.Is(err, fverrors.NoLoginErr) {

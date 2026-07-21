@@ -2,7 +2,6 @@ function sendTo(location) {
     window.location.href = `https://localhost:8080${location}`
 }
 
-
 function showError(errorString) {
     const errBox = document.getElementById("usernameErrors")
     if (!errBox) return

@@ -4,11 +4,11 @@
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>ForgeVerse Dashboard</title>
+	<title>My Stories</title>
 	<meta name="description"
-		content="Your storytelling dashboard. Create, manage, and explore your interactive stories." />
+		content="Your stories. Create, manage, and explore your interactive stories." />
 	<link rel="stylesheet" href="https://localhost:8080/css/global.css" />
-	<link rel="stylesheet" href="https://localhost:8080/css/dash.css" />
+	<link rel="stylesheet" href="https://localhost:8080/css/mystories.css" />
 </head>
 
 <body>
@@ -28,130 +28,57 @@
 					<path d="M24 4L6 14v20l18 10 18-10V14L24 4z" stroke="url(#navLogoGrad)" stroke-width="2"
 						fill="none" />
 					<path d="M16 20h16M16 24h12M16 28h8" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" />
-					<style>
-						#navLogo {
-							cursor: pointer;
-						}
-					</style>
 				</svg>
 				<span class="nav-brand">ForgeVerse</span>
 			</div>
-			<script>
-				document.getElementById("navlogo").addEventListener("click", function () {
-					window.location.href = "/";
-				});
-			</script>
 		</div>
 
 		<div class="nav-center">
-			<div class="nav-search">
+			<div class="nav-search" hidden>
 				<span class="search-icon">🔍</span>
 				<input type="text" id="searchInput" class="search-input" placeholder="Search your stories..." />
 			</div>
 		</div>
 
 		<div class="nav-right">
-			<button class="btn-icon nav-action" id="notificationBtn" title="Notifications">
-				<span>🔔</span>
-				<span class="notification-dot"></span>
-			</button>
 			<div class="nav-profile" id="navProfile">
-				<div class="profile-avatar" id="profileAvatar">
-					{{printf .Username}}
-				</div>
+				<div class="profile-avatar" id="profileAvatar">&#128052</div>
 
 				<span class="profile-name" id="usernameBtn">{{printf .Username}}</span>
 				<span class="profile-chevron">▾</span>
 
-				<!-- <style>
-					.nav-profile {
-						position: relative;
-						cursor: pointer;
-					}
-
-					.profile-dropdown {
-						position: absolute;
-						top: calc(100% + 10px);
-						right: 0;
-
-						width: 260px;
-						padding: 12px;
-
-						display: none;
-
-						background: #1f2937;
-						border-radius: 12px;
-
-						z-index: 9999;
-					}
-
-					.profile-dropdown.show {
-						display: block;
-					}
-				</style> -->
-				<div class="profile-dropdown glass-strong" id="profileDropdown">
+				<div class="profile-dropdown" id="profileDropdown">
 					<div class="dropdown-header">
-						<div class="dropdown-avatar">{{printf .Username}}</div>
-						<div>
-							<div class="dropdown-name">{{printf .Username}}</div>
-							<div class="dropdown-email">{{printf .Email}}</div>
-						</div>
+						{{.Username}}
 					</div>
-					<div class="dropdown-divider"></div>
-					<a href="#" class="dropdown-item" id="profileLink">
-						<span>👤</span> My Profile
+
+					<a href="/user/mystories" class="dropdown-item" id="profileLink">
+						My Profile
 					</a>
-					<a href="#" class="dropdown-item" id="settingsLink">
-						<span>⚙️</span> Settings
-					</a>
+
 					<div class="dropdown-divider"></div>
-					<a href="#" class="dropdown-item logout" id="logoutBtn">
-						<span>🚪</span> Sign Out
+					<a href="/auth/logout" class="dropdown-item logout" id="logoutBtn">
+						Logout
 					</a>
 				</div>
 			</div>
-			<!-- <script>
-	const usernameBtn = document.getElementById("usernameBtn");
-const profileDropdown = document.getElementById("profileDropdown");
-
-usernameBtn.addEventListener("click", function(e){
-
-    e.stopPropagation();
-
-    profileDropdown.classList.toggle("show");
-
-    console.log(profileDropdown.className);
-
-});
-
-
-document.addEventListener("click", function(){
-
-    profileDropdown.classList.remove("show");
-
-});
-</script> -->
+		</div>
 	</nav>
 
 	<main class="dashboard-main" id="dashboardMain">
 		<section class="dash-header">
 			<div class="dash-header-content">
 				<h1 class="dash-title">
-					Welcome back,
-					<span class="text-accent">{{printf .Username}}</span> ✨
+					My Stories
 				</h1>
 				<p class="dash-subtitle">
 					Continue your creative journey. Your stories await.
 				</p>
 			</div>
-			<button class="btn btn-primary create-story-btn" id="createStoryBtn">
+
+			<a href="/user/newstory"><button class="btn btn-primary create-story-btn" id="createStoryBtn">
 				<span>✦</span> Create New Story
-			</button>
-			<script>
-				document.getElementById("createStoryBtn").addEventListener("click", function () {
-					window.location.href = "/userwrite/";
-				});
-			</script>
+			</button></a>
 		</section>
 
 		<section class="dash-stats" id="dashStats">
@@ -207,38 +134,52 @@ document.addEventListener("click", function(){
 
 		<section class="dash-stories-section">
 			<div class="section-header">
-				<h2>Your Stories</h2>
 				<div class="section-filters">
 					<button class="filter-btn active" data-filter="all">All</button>
-					<button class="filter-btn" data-filter="PUBLIC">Public</button>
-					<button class="filter-btn" data-filter="PRIVATE">Private</button>
+					<button class="filter-btn" data-filter="public">Public</button>
+					<button class="filter-btn" data-filter="private">Private</button>
 				</div>
-				<style>
-					.section-filters .filter-btn:hover {
-						background-color: #4f46e5;
-						color: white;
-						border-color: black;
-						cursor: pointer;
-						transition: 0.2s;
-					}
-				</style>
 			</div>
 
-			<div class="loading-spinner" id="storiesLoading"></div>
-
 			<div class="empty-state hidden" id="emptyState">
-				<div class="empty-illustration">📚</div>
 				<h3>No stories yet</h3>
 				<p>
 					Every great tale starts with a single word. Create your first story
 					and let your imagination run wild!
 				</p>
-				<button class="btn btn-primary" id="emptyCreateBtn">
-					<span>✦</span> Create Your First Story
-				</button>
 			</div>
 
-			<div class="stories-grid hidden" id="storiesGrid"></div>
+			<div class="error-state hidden" id="errorState">
+				<p id="errorMessage"></p>
+			</div>
+
+			<div></div>
+
+			<div class="stories-grid hidden" id="storiesGrid">
+				<div class="story-card dummy" id="dummyStoryCard1">
+					<div class="card-body">
+						<div class="card-title">Story Title</div>
+						<div class="card-visibility-badge">Visibility</div>
+
+						<div class="card-description">
+							Story Description
+						</div>
+
+						<div class="card-meta">
+							<div class="card-meta-left">
+								<span class="card-meta-item">Today</span>
+								<span class="card-meta-item">0 scenes</span>
+							</div>
+							<div class="card-actions">
+								<button class="card-action-btn edit-btn" data-id="" title="Edit">✏️</button>
+								<button class="card-action-btn delete card-delete-btn" data-id="" data-title="" title="Delete">🗑️</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<loading-spinner id="loading-spinner-div"></loading-spinner>
 		</section>
 	</main>
 
@@ -336,6 +277,8 @@ document.addEventListener("click", function(){
 			</button>
 		</div>
 	</div>
+
+	<script src="https://localhost:8080/scripts/mystories.js"></script>
 </body>
 
 </html>

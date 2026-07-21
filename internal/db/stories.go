@@ -13,10 +13,11 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-func GetStoriesByUser(username string, visibilityVal models.StoryVisibility) ([]models.Story, fverrors.Error) {
+func GetStoriesByUser(username string, visibilityVal models.StoryVisibility) ([]models.Story,
+	fverrors.Error) {
 	rows, pgErr := dbConn.Query(context.Background(),
 		`SELECT story_id, story_name, 
-description, visibility FROM stories WHERE username=$1 AND visibility&$2>0 LIMIT 50 OFFSET 0`,
+description, visibility FROM stories WHERE username=$1 AND visibility&$2>0`,
 		username, visibilityVal)
 
 	if pgErr != nil {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	fverrors "forgeverse/internal/errors"
 	"regexp"
+	"strconv"
 )
 
 var (
@@ -48,7 +49,7 @@ func ValidateRID(rID string) fverrors.Error {
 	return nil
 }
 
-func ValidateVisibility(visibility string) (StoryVisibility, fverrors.Error) {
+func ValidateNConvertVisibility(visibility string) (StoryVisibility, fverrors.Error) {
 	switch visibility {
 	case "private":
 		return VisibilityPrivate, nil
@@ -59,4 +60,17 @@ func ValidateVisibility(visibility string) (StoryVisibility, fverrors.Error) {
 	}
 
 	return 0, fverrors.NewInvalidRequestError("Invalid visibility.", fmt.Errorf("invalid visibility \"%s\"", visibility))
+}
+
+func ValidateNConvertPage(page string) (int, fverrors.Error) {
+	if page == "" {
+		return 0, nil
+	}
+
+	n, err := strconv.Atoi(page)
+	if err != nil {
+		return 0, fverrors.NewInvalidRequestError("Invalid page.", fmt.Errorf("invalid page \"%s\"", page))
+	}
+
+	return n, nil
 }

@@ -23,7 +23,7 @@ func GetStoriesByUser(user *models.User, c *gin.Context) ([]models.Story, fverro
 		return nil, err
 	}
 
-	visibilityVal, err := models.ValidateVisibility(visibility)
+	visibilityVal, err := models.ValidateNConvertVisibility(visibility)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func CreateNewStory(c *gin.Context, user *models.User) (string, fverrors.Error) 
 		return "", fverrors.NewInvalidRequestError("Story name can not be empty", errors.New("story name can not be empty"))
 	}
 
-	visibilityVal, err := models.ValidateVisibility(visibility)
+	visibilityVal, err := models.ValidateNConvertVisibility(visibility)
 	if err != nil {
 		return "", err
 	}
@@ -69,7 +69,7 @@ func EditStory(c *gin.Context, user *models.User) fverrors.Error {
 		return fverrors.UnAuthorizedErr
 	}
 
-	story.Visibility, err = models.ValidateVisibility(c.PostForm("visibility"))
+	story.Visibility, err = models.ValidateNConvertVisibility(c.PostForm("visibility"))
 	if err != nil {
 		return err
 	}

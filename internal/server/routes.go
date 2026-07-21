@@ -48,13 +48,14 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// user routes
 	userGroup := r.Group("/user")
 	{
-		userGroup.GET("/mystories", s.userDashboardHandler)
+		userGroup.GET("/mystories", s.userMyStoriesHandler)
 	}
 
 	// api routes
 	publicApi := r.Group("/api")
 	{
 		publicApi.GET("/getstories/:username", s.getUserStoriesHandler)
+		publicApi.GET("/getmystories", s.getMyStoriesHandler)
 		publicApi.GET("/getchapter/:chapter_id", s.getChapterHandler)
 
 		publicApi.GET("/getstorychapters/:story_id", s.getStoryChaptersHandler)
@@ -93,7 +94,6 @@ func execTemplate(c *gin.Context, data any, filenames ...string) error {
 
 	err = t.Execute(c.Writer, data)
 	if err != nil {
-		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return err
 	}
 
@@ -269,7 +269,7 @@ func (s *Server) userRegisterHandler(c *gin.Context) {
 	c.Writer.WriteHeader(http.StatusCreated)
 }
 
-func (s *Server) userDashboardHandler(c *gin.Context) {
+func (s *Server) userMyStoriesHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if (err != nil) && (!errors.Is(err, fverrors.NoLoginErr)) {
 		fverrors.SendErrorResponse(c, err)
@@ -281,7 +281,7 @@ func (s *Server) userDashboardHandler(c *gin.Context) {
 		return
 	}
 
-	if err := execTemplate(c, user, "webpages/dashboard.html"); err != nil {
+	if err := execTemplate(c, user, "webpages/mystories.html"); err != nil {
 		fmt.Println(err)
 	}
 }
@@ -293,6 +293,28 @@ func (s *Server) getUserStoriesHandler(c *gin.Context) {
 		return
 	}
 
+	stories, err := api.GetStoriesByUser(user, c)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"stories": stories,
+	})
+}
+
+func (s *Server) getMyStoriesHandler(c *gin.Context) {
+	user, err := auth.GetUserFromSession(c)
+	if (err != nil) && (!errors.Is(err, fverrors.NoLoginErr)) {
+		fverrors.SendErrorResponse(c, err)
+		return
+	} else if !auth.IsPrivateAuthenticated(user) {
+		fverrors.SendErrorResponse(c, fverrors.UnAuthorizedErr)
+		return
+	}
+
+	c.AddParam("username", user.Username)
 	stories, err := api.GetStoriesByUser(user, c)
 	if err != nil {
 		fverrors.SendErrorResponse(c, err)

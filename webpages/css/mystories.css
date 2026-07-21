@@ -29,6 +29,7 @@ body {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
+    cursor: pointer;
 }
 
 .nav-brand {
@@ -105,7 +106,12 @@ body {
     position: relative;
 }
 
+#notificationBtn {
+    cursor: pointer
+}
+
 .notification-dot {
+    display: none;
     position: absolute;
     top: 6px;
     right: 6px;
@@ -132,6 +138,14 @@ body {
     background: var(--bg-input);
 }
 
+#profileAvatar {
+    font-size: x-large;
+    background: none;
+    border-width: medium;
+    border-style: inset;
+    border-color: var(--accent-purple);
+}
+
 .profile-avatar,
 .dropdown-avatar {
     width: 34px;
@@ -141,7 +155,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: var(--font-heading);
+    font-family: var(--font-heading), serif;
     font-weight: 700;
     font-size: var(--font-size-sm);
     color: #fff;
@@ -177,11 +191,10 @@ body {
     padding: var(--space-sm);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
-    opacity: 0;
     display: none;
     visibility: hidden;
-    background: var(--bg-card);
-    border: 1px solid var(--border-subtle);
+    background: var(--gradient-solid-card);
+    border: medium inset var(--accent-purple-dark);
     transform: translateY(-8px);
     transition: all var(--transition-base);
 }
@@ -201,19 +214,13 @@ body {
 .dropdown-header {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-sm) var(--space-md);
+    padding: var(--space-sm) var(--space-sm) var(--space-sm);
 }
 
 .dropdown-name {
     font-weight: 600;
     font-size: var(--font-size-sm);
     color: var(--text-primary);
-}
-
-.dropdown-email {
-    font-size: var(--font-size-xs);
-    color: var(--text-muted);
 }
 
 .dropdown-divider {
@@ -296,6 +303,7 @@ body {
     align-items: center;
     gap: var(--space-md);
     padding: var(--space-lg);
+    cursor: default;
 }
 
 .stat-icon {
@@ -326,7 +334,7 @@ body {
 .section-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: end;
     margin-bottom: var(--space-lg);
     animation: fadeInUp 0.7s ease;
 }
@@ -346,7 +354,7 @@ body {
 
 .filter-btn {
     padding: 6px 16px;
-    font-family: var(--font-body);
+    font-family: var(--font-body), serif;
     font-size: var(--font-size-xs);
     font-weight: 500;
     color: var(--text-muted);
@@ -365,6 +373,11 @@ body {
 
 .filter-btn:hover:not(.active) {
     color: var(--text-primary);
+}
+
+.dash-stories-section {
+    flex-direction: column;
+    align-items: center;
 }
 
 .stories-grid {
@@ -470,13 +483,16 @@ body {
 
 .card-body {
     padding: var(--space-md);
+    display: flex;
+    flex-direction: column;
 }
 
 .card-title {
-    font-family: var(--font-heading);
-    font-size: var(--font-size-base);
+    font-family: var(--font-heading), serif;
+    font-size: var(--font-size-2xl);
     font-weight: 600;
     color: var(--text-primary);
+    margin-top: 6px;
     margin-bottom: 6px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -488,12 +504,12 @@ body {
     color: var(--text-muted);
     line-height: 1.5;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
     line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     margin-bottom: var(--space-md);
-    min-height: 42px;
+    min-height: 61px;
 }
 
 .card-meta {
@@ -556,6 +572,13 @@ body {
     animation: fadeIn 0.6s ease;
 }
 
+.error-state {
+    text-align: center;
+    padding: var(--space-3xl) var(--space-xl);
+    animation: fadeIn 0.6s ease;
+    color: var(--accent-red);
+}
+
 .empty-illustration {
     font-size: 4rem;
     margin-bottom: var(--space-lg);
@@ -568,12 +591,23 @@ body {
     margin-bottom: var(--space-sm);
 }
 
-.empty-state p {
+.empty-state p,
+.error-state p {
     color: var(--text-muted);
     font-size: var(--font-size-sm);
     max-width: 400px;
     margin: 0 auto var(--space-lg);
     line-height: 1.6;
+}
+
+#loadMoreBtn {
+    display: block;
+    margin-top: var(--space-lg);
+    justify-self: center;
+    padding: 12px 28px;
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    border-radius: var(--radius-lg);
 }
 
 /* --- Thumbnail Upload (Modal) --- */

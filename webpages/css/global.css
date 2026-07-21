@@ -25,6 +25,7 @@
 
     --gradient-primary: linear-gradient(135deg, #8b5cf6, #6366f1);
     --gradient-hero: linear-gradient(135deg, #0f0f2e 0%, #1a0a3e 30%, #2d1b69 60%, #0f0f2e 100%);
+    --gradient-solid-card: linear-gradient(135deg, #141432, #0f0f2e);
     --gradient-card: linear-gradient(145deg, rgba(139, 92, 246, 0.08), rgba(99, 102, 241, 0.04));
     --gradient-button: linear-gradient(135deg, #8b5cf6, #6366f1, #8b5cf6);
     --gradient-button-hover: linear-gradient(135deg, #a78bfa, #818cf8, #a78bfa);
@@ -542,14 +543,14 @@ h4 { font-size: var(--font-size-xl); }
 .badge.comedy { background: rgba(251, 191, 36, 0.15); color: #fcd34d; border-color: rgba(251, 191, 36, 0.2); }
 .badge.drama { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-color: rgba(59, 130, 246, 0.2); }
 
-.loading-spinner {
+loading-spinner {
     display: flex;
     align-items: center;
     justify-content: center;
     padding: var(--space-3xl);
 }
 
-.loading-spinner::after {
+loading-spinner::after {
     content: '';
     width: 40px;
     height: 40px;
@@ -639,6 +640,7 @@ h4 { font-size: var(--font-size-xl); }
 .mb-md { margin-bottom: var(--space-md); }
 .mb-lg { margin-bottom: var(--space-lg); }
 .hidden { display: none !important; }
+.dummy { display: none !important; }
 
 /* --- Responsive Helpers --- */
 @media (max-width: 768px) {

@@ -13,6 +13,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
+// GetStoriesByUser gets all stories of given user with specified visibility
 func GetStoriesByUser(username string, visibilityVal models.StoryVisibility) ([]models.Story,
 	fverrors.Error) {
 	rows, pgErr := dbConn.Query(context.Background(),
@@ -46,6 +47,7 @@ description, visibility FROM stories WHERE username=$1 AND visibility&$2>0`,
 	return stories, nil
 }
 
+// GetStoryByID gets story by its story_id. Returns StoryNotFoundError if no such story exists.
 func GetStoryByID(storyID string) (*models.Story, fverrors.Error) {
 	story := &models.Story{
 		StoryID: storyID,
@@ -68,6 +70,7 @@ func GetStoryByID(storyID string) (*models.Story, fverrors.Error) {
 	return story, nil
 }
 
+// InsertNewStory inserts a new story with given details.
 func InsertNewStory(storyName, storyDescription, storyID string, visibility models.StoryVisibility,
 	user *models.User) (string,
 	fverrors.Error) {
@@ -80,8 +83,7 @@ func InsertNewStory(storyName, storyDescription, storyID string, visibility mode
 	}
 
 	if pgErr, okay := errors.AsType[*pgconn.PgError](err); okay && (pgErr.Code == pgerrcode.UniqueViolation) {
-		return "", fverrors.NewDBError(http.StatusUnprocessableEntity,
-			fmt.Sprintf("User already has a story named %s", storyName),
+		return "", fverrors.NewInvalidRequestError(fmt.Sprintf("User already has a story named %s", storyName),
 			pgErr)
 	} else if okay && (pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) || pgerrcode.IsDataException(pgErr.Code)) {
 		return "", fverrors.GenericInvalidRequestErr
@@ -90,6 +92,8 @@ func InsertNewStory(storyName, storyDescription, storyID string, visibility mode
 	return "", fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred.", err)
 }
 
+// UpdateStory all description, visibility and story_name for given story_id.
+// New values from these fields are taken from "story" argument. story.Username is not used.
 func UpdateStory(story *models.Story) fverrors.Error {
 	_, err := dbConn.Exec(context.Background(),
 		"UPDATE stories SET description=$1, visibility=$2, story_name=$3 WHERE story_id=$4",

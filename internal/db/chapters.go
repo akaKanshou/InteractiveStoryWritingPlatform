@@ -15,6 +15,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
+// chapterDir is the prefix for chapter storage
 const chapterDir = "./chapters"
 
 func GetChapterByID(chapterID string) (*models.Chapter, fverrors.Error) {

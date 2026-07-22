@@ -36,6 +36,3 @@ main
 # TLS KEYS
 private_key
 public_key
-
-# Chapter content files
-chapters/*

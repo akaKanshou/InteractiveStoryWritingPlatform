@@ -12,6 +12,8 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
+// GetUserByID gets the username registered with the given userID. The returned user has no access (auth.NoAccess)
+// Returns UserNotFoundError if no such user exists.
 func GetUserByID(userID string) (*models.User, fverrors.Error) {
 	user := &models.User{
 		UserID:    userID,
@@ -30,6 +32,9 @@ func GetUserByID(userID string) (*models.User, fverrors.Error) {
 	return user, nil
 }
 
+// RegisterUser registers given user model into the database.
+// The returned user has added database auth (auth.Db) with whatever it had before.
+// Returns UsernameInUseError if username is already in use.
 func RegisterUser(user *models.User) (*models.User, fverrors.Error) {
 	if err := models.ValidateUsername(user.Username); err != nil {
 		return nil, err
@@ -50,6 +55,8 @@ func RegisterUser(user *models.User) (*models.User, fverrors.Error) {
 	return nil, fverrors.NewServerError(err)
 }
 
+// GetUserByUsername returns a models.User with given username field and its corresponding userID field set and
+// with no auth (auth.NoAccess). Returns UserNotFoundError if no such user exists.
 func GetUserByUsername(username string) (*models.User, fverrors.Error) {
 	if err := models.ValidateUsername(username); err != nil {
 		return nil, err
@@ -60,7 +67,8 @@ func GetUserByUsername(username string) (*models.User, fverrors.Error) {
 		AuthState: auth.NoAccess,
 	}
 
-	err := dbConn.QueryRow(context.Background(), `SELECT username FROM users WHERE username=$1`, username).Scan(&user.Username)
+	err := dbConn.QueryRow(context.Background(), `SELECT user_id FROM users WHERE username=$1`,
+		username).Scan(&user.UserID)
 	if (err != nil) && (errors.Is(err, pgx.ErrNoRows)) {
 		return nil, fverrors.UserNotFoundError
 	} else if err != nil {

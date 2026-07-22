@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"forgeverse/internal/db"
 	"log"
@@ -57,8 +58,10 @@ func main() {
 	// Run graceful shutdown in a separate goroutine
 	go gracefulShutdown(server, done)
 
+	fmt.Println("Server starting at:", db.TimeNow(), "seconds.")
+
 	err := server.HttpServer.ListenAndServeTLS("./public_key", "./private_key")
-	if err != nil && err != http.ErrServerClosed {
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		panic(fmt.Sprintf("http server error: %s", err))
 	}
 

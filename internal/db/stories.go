@@ -70,13 +70,14 @@ func GetStoryByID(storyID string) (*models.Story, fverrors.Error) {
 	return story, nil
 }
 
-// InsertNewStory inserts a new story with given details.
+// InsertNewStory inserts a new story with given details. Sets last_updated to TimeNow().
 func InsertNewStory(storyName, storyDescription, storyID string, visibility models.StoryVisibility,
 	user *models.User) (string,
 	fverrors.Error) {
 	_, err := dbConn.Exec(context.Background(),
-		`INSERT INTO stories (story_name, description, visibility, username, story_id) VALUES ($1, $2, $3,$4 ,$5)`,
-		storyName, storyDescription, visibility, user.Username, storyID)
+		`INSERT INTO stories (story_name, description, visibility, username, story_id, last_updated) VALUES ($1, $2, $3,
+$4 ,$5, $6)`,
+		storyName, storyDescription, visibility, user.Username, storyID, TimeNow())
 
 	if err == nil {
 		return storyID, nil
@@ -93,11 +94,11 @@ func InsertNewStory(storyName, storyDescription, storyID string, visibility mode
 }
 
 // UpdateStory all description, visibility and story_name for given story_id.
-// New values from these fields are taken from "story" argument. story.Username is not used.
+// New values from these fields are taken from "story" argument. story.Username is not used. Sets last_updated to TimeNow().
 func UpdateStory(story *models.Story) fverrors.Error {
 	_, err := dbConn.Exec(context.Background(),
-		"UPDATE stories SET description=$1, visibility=$2, story_name=$3 WHERE story_id=$4",
-		story.Description, story.Visibility, story.StoryName, story.StoryID)
+		"UPDATE stories SET description=$1, visibility=$2, story_name=$3, last_updated=$5 WHERE story_id=$4",
+		story.Description, story.Visibility, story.StoryName, story.StoryID, TimeNow())
 
 	if pgErr, okay := errors.AsType[*pgconn.PgError](err); okay && (pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) || pgerrcode.IsDataException(pgErr.Code)) {
 		return fverrors.GenericInvalidRequestErr

@@ -74,6 +74,17 @@ func (s *Server) RegisterRoutes() http.Handler {
 		privateApi.POST("/addedge", s.addEdgeHandler)
 	}
 
+	dummyApi := r.Group("/dummy")
+	{
+		dummyApi.GET("/make", s.makeDummyUser)
+
+		dummyApi.POST("/newstory", s.newDummyStoryHandler)
+
+		dummyApi.POST("/newchapter", s.newDummyChapterHandler)
+
+		dummyApi.POST("/addedge", s.addDummyEdgeHandler)
+	}
+
 	// static assets
 	staticAssets := r.Group("/")
 	{

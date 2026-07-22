@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	_ "github.com/joho/godotenv/autoload"
@@ -29,4 +30,8 @@ func init() {
 
 func Close() error {
 	return dbConn.Close(context.Background())
+}
+
+func TimeNow() int64 {
+	return int64(time.Since(time.Unix(0, 0)).Seconds())
 }

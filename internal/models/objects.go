@@ -1,7 +1,7 @@
 package models
 
 type User struct {
-	Name   string `json:"name" db:"-"`
+	Name   string `json:"name,omitempty" db:"-"`
 	Email  string `json:"email,omitempty" db:"email"`
 	UserID string `json:"id" db:"user_id"`
 
@@ -24,6 +24,7 @@ type Story struct {
 	Description string          `json:"description" db:"description"`
 	Visibility  StoryVisibility `json:"visibility" db:"visibility"`
 	Username    string          `json:"username" db:"username"`
+	LastUpdated int64           `json:"last_updated,omitempty" db:"last_updated"`
 }
 
 type Chapter struct {
@@ -31,6 +32,7 @@ type Chapter struct {
 	ChapterName string `json:"chapter_name" db:"chapter_name"`
 	StoryID     string `json:"story_id" db:"story_id"`
 	Content     string `json:"content,omitempty" db:"content"`
+	LastUpdated int64  `json:"last_updated,omitempty" db:"last_updated"`
 
 	FileID string `json:"-" db:"file_id"`
 }

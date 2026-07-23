@@ -8,7 +8,6 @@ import (
 	"forgeverse/internal/db"
 	fverrors "forgeverse/internal/errors"
 	"forgeverse/internal/models"
-	"html/template"
 	"net/http"
 
 	"github.com/gin-contrib/cors"
@@ -32,6 +31,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	// public routes
 	r.GET("/", s.helloWorldHandler)
+	r.GET("/home", s.homeHandler)
 
 	// auth routes
 	authGroup := r.Group("/auth")
@@ -95,20 +95,6 @@ func (s *Server) RegisterRoutes() http.Handler {
 	}
 
 	return r
-}
-
-func execTemplate(c *gin.Context, data any, filenames ...string) error {
-	t, err := template.ParseFiles(filenames...)
-	if err != nil {
-		return err
-	}
-
-	err = t.Execute(c.Writer, data)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 /*
@@ -224,9 +210,7 @@ func (s *Server) helloWorldHandler(c *gin.Context) {
 		})
 	}
 
-	if err := execTemplate(c, u, "webpages/index.html"); err != nil {
-		fmt.Println(err)
-	}
+	servePage(c, "index", u)
 }
 
 /*
@@ -253,9 +237,7 @@ func (s *Server) loginHandler(c *gin.Context) {
 		return
 	}
 
-	if err := execTemplate(c, user, "webpages/login.html"); err != nil {
-		fmt.Println(err)
-	}
+	servePage(c, "login", user)
 }
 
 /*
@@ -278,9 +260,7 @@ func (s *Server) userCreateHandler(c *gin.Context) {
 		return
 	}
 
-	if err := execTemplate(c, user, "webpages/createuser.html"); err != nil {
-		fmt.Println(err)
-	}
+	servePage(c, "createuser", user)
 }
 
 /*
@@ -340,9 +320,7 @@ func (s *Server) userMyStoriesHandler(c *gin.Context) {
 		return
 	}
 
-	if err := execTemplate(c, user, "webpages/mystories.html"); err != nil {
-		fmt.Println(err)
-	}
+	servePage(c, "mystories", user)
 }
 
 /*
@@ -692,4 +670,17 @@ func (s *Server) getEdgesHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"edges": edges})
+}
+
+func (s *Server) homeHandler(c *gin.Context) {
+	user, err := auth.GetUserFromSession(c)
+	if err != nil && !errors.Is(err, fverrors.NoLoginErr) {
+		fverrors.SendErrorResponse(c, err)
+		return
+	} else if !auth.IsPublicAuthenticated(user) {
+		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
+		return
+	}
+
+	servePage(c, "home", user)
 }

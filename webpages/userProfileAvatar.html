@@ -1,0 +1,25 @@
+{{define "userAvatarTmpl"}}
+    {{if .UserID}}
+        <div class="profile-avatar" id="profileAvatar">&#1280{{slice .UserID 0 2}}</div>
+
+        <span class="profile-name" id="usernameBtn">{{printf .Username}}</span>
+        <span class="profile-chevron">▾</span>
+
+        <div class="profile-dropdown" id="profileDropdown">
+            <div class="dropdown-header">
+                {{.Username}}
+            </div>
+
+            <a href="/user/mystories" class="dropdown-item" id="profileLink">
+                My Profile
+            </a>
+
+            <div class="dropdown-divider"></div>
+            <a href="/auth/logout" class="dropdown-item logout" id="logoutBtn">
+                Logout
+            </a>
+        </div>
+    {{else}}
+        <div class="log-in-btn" id="logInBtn">Log In</div>
+    {{end}}
+{{end}}

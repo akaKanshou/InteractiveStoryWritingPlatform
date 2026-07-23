@@ -64,16 +64,26 @@ func GetUserFromSession(c *gin.Context) (*models.User, fverrors.Error) {
 		return nil, fverrors.NewServerError(err)
 	}
 
-	userAny := session.Values["user"]
-	if userAny == nil {
-		return new(models.User{
-			Username:  "Guest" + rand.Text()[:12],
-			AuthState: Guest,
-			Remember:  true,
-		}), fverrors.NoLoginErr
+	userAnyCheck := session.Values["user"]
+	if userAnyCheck != nil {
+		if user, ok := userAnyCheck.(models.User); ok && !CheckAuth(&user, Guest) {
+			return &user, nil
+		} else {
+			return &user, fverrors.NoLoginErr
+		}
 	}
 
-	return new(userAny.(models.User)), nil
+	user := new(models.User{
+		Username:  "Guest" + rand.Text()[:12],
+		AuthState: Guest,
+		Remember:  true,
+	})
+
+	if err := SaveUserToSession(c, user); err != nil {
+		return nil, fverrors.NewServerError(err)
+	}
+
+	return user, fverrors.NoLoginErr
 }
 
 func CheckAuth(user *models.User, authState State) bool {

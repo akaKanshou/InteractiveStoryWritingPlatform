@@ -11,9 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetStoriesByUser(user *models.User, c *gin.Context) ([]models.Story, fverrors.Error) {
-	username, visibility := c.Param("username"), c.Query("visibility")
-
+func GetStoriesByUser(user *models.User, c *gin.Context, username, visibility string) ([]models.Story, fverrors.Error) {
 	if err := models.ValidateUsername(username); err != nil {
 		return nil, err
 	}

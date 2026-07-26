@@ -100,7 +100,7 @@
 						📖
 					</div>
 					<div class="stat-info">
-						<div class="stat-value" id="totalStories">0</div>
+						<div class="stat-value" id="totalStories">{{len .Stories}}</div>
 						<div class="stat-label">Total Stories</div>
 					</div>
 				</div>
@@ -115,7 +115,7 @@
 						📝
 					</div>
 					<div class="stat-info">
-						<div class="stat-value" id="totalScenes">0</div>
+						<div class="stat-value" id="totalScenes">{{.StatScenes}}</div>
 						<div class="stat-label">Total Scenes</div>
 					</div>
 				</div>
@@ -130,7 +130,7 @@
 						🌐
 					</div>
 					<div class="stat-info">
-						<div class="stat-value" id="publicStories">0</div>
+						<div class="stat-value" id="publicStories">{{.StatPublic}}</div>
 						<div class="stat-label">Published</div>
 					</div>
 				</div>
@@ -145,7 +145,7 @@
 						🔒
 					</div>
 					<div class="stat-info">
-						<div class="stat-value" id="privateStories">0</div>
+						<div class="stat-value" id="privateStories">{{.StatPrivate}}</div>
 						<div class="stat-label">Private</div>
 					</div>
 				</div>
@@ -160,56 +160,25 @@
 					</div>
 				</div>
 
-				<div class="empty-state hidden" id="emptyState">
-					<h3>No stories yet</h3>
-					<p>
-						Every great tale starts with a single word. Create your first story
-						and let your imagination run wild!
-					</p>
-				</div>
-
-				<div class="error-state hidden" id="errorState">
-					<p id="errorMessage"></p>
-				</div>
-
-				<div></div>
-
-				<div class="stories-grid hidden" id="storiesGrid">
-					<div class="story-card dummy" id="dummyStoryCard1">
-						<div class="card-body">
-							<div class="card-title">Story Title</div>
-							<div class="card-visibility-badge">Visibility</div>
-
-							<div class="card-description">Story Description</div>
-
-							<div class="card-meta">
-								<div class="card-meta-left">
-									<span class="card-meta-item">Today</span>
-									<span class="card-meta-item">0 scenes</span>
-								</div>
-								<div class="card-actions">
-									<button
-										class="card-action-btn edit-btn"
-										data-id=""
-										title="Edit"
-									>
-										✏️
-									</button>
-									<button
-										class="card-action-btn delete card-delete-btn"
-										data-id=""
-										data-title=""
-										title="Delete"
-									>
-										🗑️
-									</button>
-								</div>
-							</div>
-						</div>
+				{{if .Err}}
+					<div class="error-state" id="errorState">
+						<p id="errorMessage">{{.Err.Error}}</p>
 					</div>
-				</div>
-
-				<loading-spinner id="loading-spinner-div"></loading-spinner>
+				{{else if .Stories}}
+					<div class="stories-grid" id="storiesGrid">
+						{{range .Stories}}
+							{{template "storyCard" .}}
+						{{end}}
+					</div>
+				{{else}}
+					<div class="empty-state" id="emptyState">
+						<h3>No stories yet</h3>
+						<p>
+							Every great tale starts with a single word. Create your first story
+							and let your imagination run wild!
+						</p>
+					</div>
+				{{end}}
 			</section>
 		</main>
 

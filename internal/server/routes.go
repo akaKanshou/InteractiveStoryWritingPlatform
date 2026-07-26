@@ -16,6 +16,7 @@ import (
 
 //TODO: implement efficient content response with fileFromFS(potentially)
 //TODO: add location header to userRegisterHandler
+//TODO: check error handling in templates
 
 func (s *Server) RegisterRoutes() http.Handler {
 	r := gin.New()
@@ -320,7 +321,13 @@ func (s *Server) userMyStoriesHandler(c *gin.Context) {
 		return
 	}
 
-	servePage(c, "mystories", user)
+	stories, err := api.GetStoriesByUser(user, c, user.Username, "all")
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	servePage(c, "mystories", models.NewMyStoriesData(user, stories))
 }
 
 /*
@@ -354,7 +361,7 @@ func (s *Server) getUserStoriesHandler(c *gin.Context) {
 		return
 	}
 
-	stories, err := api.GetStoriesByUser(user, c)
+	stories, err := api.GetStoriesByUser(user, c, c.Param("username"), c.Query("visibility"))
 	if err != nil {
 		fverrors.SendErrorResponse(c, err)
 		return
@@ -381,7 +388,7 @@ func (s *Server) getMyStoriesHandler(c *gin.Context) {
 	}
 
 	c.AddParam("username", user.Username)
-	stories, err := api.GetStoriesByUser(user, c)
+	stories, err := api.GetStoriesByUser(user, c, c.Param("username"), c.Query("visibility"))
 	if err != nil {
 		fverrors.SendErrorResponse(c, err)
 		return

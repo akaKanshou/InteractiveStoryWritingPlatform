@@ -25,6 +25,7 @@ type Story struct {
 	Visibility  StoryVisibility `json:"visibility" db:"visibility"`
 	Username    string          `json:"username" db:"username"`
 	LastUpdated int64           `json:"last_updated,omitempty" db:"last_updated"`
+	Chapters    int             `json:"chapters" db:"chapters"`
 }
 
 type Chapter struct {

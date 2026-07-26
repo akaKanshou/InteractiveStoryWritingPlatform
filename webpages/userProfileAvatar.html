@@ -1,6 +1,6 @@
 {{define "userAvatarTmpl"}}
     {{if .User.UserID}}
-        <div class="profile-avatar" id="profileAvatar">&#1280{{slice .User.UserID 0 2}}</div>
+        <div class="profile-avatar" id="profileAvatar">&#1280{{.PFP}}</div>
 
         <span class="profile-name" id="usernameBtn">{{printf .User.Username}}</span>
         <span class="profile-chevron">▾</span>

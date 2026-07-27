@@ -11,27 +11,23 @@ function closeAllDropdowns() {
 
 document.addEventListener("DOMContentLoaded", async () => {
     document.addEventListener("click", (e) => {
-        closeAllDropdowns()
-    })
-
-    const dropdowns = document.querySelectorAll(".dropdown")
-    for (let dropdown of dropdowns) {
-        dropdown.addEventListener("click", (event) => {
-            event.target.classList.toggle("open")
-            event.stopPropagation()
-        })
-    }
-
-    document.addEventListener("click", (e) => {
         if (e.target.classList.contains("filter-btn")) {
             const list = document.getElementsByClassName("filter-btn");
             for (const item of list) {
                 item.classList.remove('active')
             }
             e.target.classList.add('active')
+
+            showContent(e.target.dataset.filter)
         }
 
-        showContent(e.target.dataset.filter)
+        closeAllDropdowns()
+    })
+
+    document.querySelector(".nav-profile").addEventListener("click", (e)=> {
+        const dropdown = document.querySelector(".nav-profile .dropdown")
+        dropdown.classList.toggle("open")
+        e.stopImmediatePropagation()
     })
 
     stories = document.querySelectorAll(".story-card")

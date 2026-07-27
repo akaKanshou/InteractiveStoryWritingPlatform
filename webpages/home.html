@@ -73,39 +73,6 @@
 		</nav>
 
 		<main class="home-main" id="homeMain">
-			<section class="home-section" id="lastestStoriesSection">
-				<div class="home-section-title">
-					<div class="dash-header-content">
-						<h1 class="dash-title">Latest Titles</h1>
-					</div>
-				</div>
-
-				<div class="home-stories-section" id="latestStories">
-					<div class="stories-grid" id="latestStoriesGrid">
-						<div class="story-card">
-							<div class="card-body">
-								<div class="card-title">Story Title</div>
-
-								<div class="card-description">Story Description</div>
-
-								<div class="card-meta">
-									<div class="user-tag">@Guest</div>
-									<div class="card-meta-left">
-										<span class="card-meta-item">Today</span>
-										<span class="card-meta-item">0 scenes</span>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<loading-spinner
-						id="latestStoriesSpinner"
-						class="hidden"
-					></loading-spinner>
-				</div>
-			</section>
-
 			<section class="home-section" id="editorsPicksSection">
 				<div class="home-section-title">
 					<div class="dash-header-content">
@@ -113,30 +80,19 @@
 					</div>
 				</div>
 
-				<div class="home-stories-section" id="editorsPicksStories">
-					<div class="stories-grid" id="editorsPicksStoriesGrid">
-						<div class="story-card">
-							<div class="card-body">
-								<div class="card-title">Story Title</div>
-
-								<div class="card-description">Story Description</div>
-
-								<div class="card-meta">
-									<div class="user-tag">@Guest</div>
-									<div class="card-meta-left">
-										<span class="card-meta-item">Today</span>
-										<span class="card-meta-item">0 scenes</span>
-									</div>
-								</div>
-							</div>
+				{{if .EditorsPicks}}
+					<div class="home-stories-section" id="editorsPicksStories">
+						<div class="stories-grid" id="editorsPicksStoriesGrid">
+							{{range .EditorsPicks}}
+								{{template "storyCard" .}}
+							{{end}}
 						</div>
 					</div>
-
-					<loading-spinner
-						id="latestStoriesSpinner"
-						class="hidden"
-					></loading-spinner>
-				</div>
+				{{else}}
+					<div class="empty-state">
+						<h3>Coming Soon...</h3>
+					</div>
+				{{end}}
 			</section>
 
 			<section class="home-section" id="trendingSection">
@@ -146,30 +102,19 @@
 					</div>
 				</div>
 
-				<div class="home-stories-section" id="trendingSectionStories">
-					<div class="stories-grid" id="trendingSectionStoriesGrid">
-						<div class="story-card">
-							<div class="card-body">
-								<div class="card-title">Story Title</div>
-
-								<div class="card-description">Story Description</div>
-
-								<div class="card-meta">
-									<div class="user-tag">@Guest</div>
-									<div class="card-meta-left">
-										<span class="card-meta-item">Today</span>
-										<span class="card-meta-item">0 scenes</span>
-									</div>
-								</div>
-							</div>
+				{{if .EditorsPicks}}
+					<div class="home-stories-section" id="trendingStories">
+						<div class="stories-grid" id="trendingStoriesGrid">
+							{{range .EditorsPicks}}
+								{{template "storyCard" .}}
+							{{end}}
 						</div>
 					</div>
-
-					<loading-spinner
-						id="latestStoriesSpinner"
-						class="hidden"
-					></loading-spinner>
-				</div>
+				{{else}}
+					<div class="empty-state">
+						<h3>Coming Soon...</h3>
+					</div>
+				{{end}}
 			</section>
 
 			<section class="home-section" id="recentlyUpdated">
@@ -179,30 +124,19 @@
 					</div>
 				</div>
 
-				<div class="home-stories-section" id="recentlyUpdatedStories">
-					<div class="stories-grid" id="recentlyUpdatedStoriesGrid">
-						<div class="story-card">
-							<div class="card-body">
-								<div class="card-title">Story Title</div>
-
-								<div class="card-description">Story Description</div>
-
-								<div class="card-meta">
-									<div class="user-tag">@Guest</div>
-									<div class="card-meta-left">
-										<span class="card-meta-item">Today</span>
-										<span class="card-meta-item">0 scenes</span>
-									</div>
-								</div>
-							</div>
+				{{if .RecentlyUpdated}}
+					<div class="home-stories-section" id="recentlyUpdatedStories">
+						<div class="stories-grid" id="recentlyUpdatedStoriesGrid">
+							{{range .EditorsPicks}}
+								{{template "storyCard" .}}
+							{{end}}
 						</div>
 					</div>
-
-					<loading-spinner
-						id="latestStoriesSpinner"
-						class="hidden"
-					></loading-spinner>
-				</div>
+				{{else}}
+					<div class="empty-state">
+						<h3>Coming Soon...</h3>
+					</div>
+				{{end}}
 			</section>
 		</main>
 

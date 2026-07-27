@@ -35,3 +35,26 @@ func NewMyStoriesData(user *User, stories []Story) *MyStoriesData {
 
 	return data
 }
+
+type HomePageData struct {
+	User *User
+	PFP  int
+
+	TrendingStories, EditorsPicks, RecentlyUpdated []Story
+
+	Err error
+}
+
+func NewHomePageData(user *User, trendingStories, editorsPicks, recentlyUpdated []Story) *HomePageData {
+	data := &HomePageData{
+		User: user,
+
+		TrendingStories: trendingStories,
+		EditorsPicks:    editorsPicks,
+		RecentlyUpdated: recentlyUpdated,
+	}
+
+	data.PFP, _ = strconv.Atoi(user.UserID[len(user.UserID)-2:])
+
+	return data
+}

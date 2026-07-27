@@ -689,5 +689,5 @@ func (s *Server) homeHandler(c *gin.Context) {
 		return
 	}
 
-	servePage(c, "home", user)
+	servePage(c, "home", models.NewHomePageData(user, nil, nil, nil))
 }

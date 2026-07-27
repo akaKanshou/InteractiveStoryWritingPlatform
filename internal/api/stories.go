@@ -80,3 +80,7 @@ func EditStory(c *gin.Context, user *models.User) fverrors.Error {
 
 	return nil
 }
+
+func GetRecentlyUpdatedStories() ([]models.Story, fverrors.Error) {
+	return nil, nil
+}

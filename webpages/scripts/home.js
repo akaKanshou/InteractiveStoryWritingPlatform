@@ -138,21 +138,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     //         console.log(reason)
     //     })
 
-    for (let i = 0; i < 2; i++) {
-        document.getElementById("editorsPicksStoriesGrid").appendChild(document.querySelector(".story-card").cloneNode(true))
-    }
-
-    for (let i = 0; i < 5; i++) {
-        document.getElementById("trendingSectionStoriesGrid").appendChild(document.querySelector(".story-card").cloneNode(true))
-    }
-
-    for (let i = 0; i < 2; i++) {
-        document.getElementById("latestStoriesGrid").appendChild(document.querySelector(".story-card").cloneNode(true))
-    }
-
-    for (let i = 0; i < 20; i++) {
-        document.getElementById("recentlyUpdatedStoriesGrid").appendChild(document.querySelector(".story-card").cloneNode(true))
-    }
+    // for (let i = 0; i < 2; i++) {
+    //     document.getElementById("editorsPicksStoriesGrid").appendChild(document.querySelector(".story-card").cloneNode(true))
+    // }
+    //
+    // for (let i = 0; i < 5; i++) {
+    //     document.getElementById("trendingSectionStoriesGrid").appendChild(document.querySelector(".story-card").cloneNode(true))
+    // }
+    //
+    // for (let i = 0; i < 20; i++) {
+    //     document.getElementById("recentlyUpdatedStoriesGrid").appendChild(document.querySelector(".story-card").cloneNode(true))
+    // }
 
     window.scrollTo(0, 0)
 })

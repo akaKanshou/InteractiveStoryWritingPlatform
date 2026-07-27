@@ -689,5 +689,11 @@ func (s *Server) homeHandler(c *gin.Context) {
 		return
 	}
 
-	servePage(c, "home", models.NewHomePageData(user, nil, nil, nil))
+	stories, err := api.GetHomePageStories()
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	servePage(c, "home", models.NewHomePageData(user, stories[0], stories[1], stories[2]))
 }

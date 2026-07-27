@@ -81,6 +81,21 @@ func EditStory(c *gin.Context, user *models.User) fverrors.Error {
 	return nil
 }
 
-func GetRecentlyUpdatedStories() ([]models.Story, fverrors.Error) {
-	return nil, nil
+func GetHomePageStories() ([][]models.Story, fverrors.Error) {
+	stories := make([][]models.Story, 3)
+	var err fverrors.Error
+
+	stories[0], err = db.GetLatestStories(3)
+	if err != nil {
+		return nil, err
+	}
+
+	stories[1] = nil
+
+	stories[2], err = db.GetLatestStories(21)
+	if err != nil {
+		return nil, err
+	}
+
+	return stories, nil
 }

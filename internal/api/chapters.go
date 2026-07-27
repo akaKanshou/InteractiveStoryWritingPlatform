@@ -27,7 +27,9 @@ func CreateNewChapter(c *gin.Context, user *models.User) (string, fverrors.Error
 		FileID:      rand.Text()[:15],
 	}
 
-	err = db.InsertNewChapter(chapter)
+	timeNow := db.TimeNow()
+
+	err = db.InsertNewChapter(chapter, timeNow)
 	if err != nil {
 		return "", err
 	}
@@ -59,8 +61,14 @@ func EditChapter(c *gin.Context, user *models.User) fverrors.Error {
 		return fverrors.UnAuthorizedErr
 	}
 
+	timeNow := db.TimeNow()
+
 	chapter.ChapterName = c.PostForm("chapter_name")
-	if err := db.UpdateChapter(chapter); err != nil {
+	if err := db.UpdateChapter(chapter, timeNow); err != nil {
+		return err
+	}
+
+	if err := db.UpdateStoryLastUpdated(story.StoryID, timeNow); err != nil {
 		return err
 	}
 

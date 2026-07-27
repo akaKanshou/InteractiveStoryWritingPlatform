@@ -54,7 +54,7 @@ func GetStoryByID(storyID string) (*models.Story, fverrors.Error) {
 	}
 
 	pgErr := dbConn.QueryRow(context.Background(),
-		"SELECT username, story_name, description, visibility FROM stories WHERE story_id = $1",
+		`SELECT username, story_name, description, visibility FROM stories WHERE story_id = $1`,
 		storyID).Scan(
 		&story.Username,
 		&story.StoryName,
@@ -97,7 +97,7 @@ $4 ,$5, $6)`,
 // New values from these fields are taken from "story" argument. story.Username is not used. Sets last_updated to TimeNow().
 func UpdateStory(story *models.Story) fverrors.Error {
 	_, err := dbConn.Exec(context.Background(),
-		"UPDATE stories SET description=$1, visibility=$2, story_name=$3, last_updated=$5 WHERE story_id=$4",
+		`UPDATE stories SET description=$1, visibility=$2, story_name=$3, last_updated=$5 WHERE story_id=$4`,
 		story.Description, story.Visibility, story.StoryName, story.StoryID, TimeNow())
 
 	if pgErr, okay := errors.AsType[*pgconn.PgError](err); okay && (pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) || pgerrcode.IsDataException(pgErr.Code)) {
@@ -107,4 +107,49 @@ func UpdateStory(story *models.Story) fverrors.Error {
 	}
 
 	return nil
+}
+
+func UpdateStoryLastUpdated(storyID string, timeNow int64) fverrors.Error {
+	_, err := dbConn.Exec(context.Background(),
+		`UPDATE stories SET last_updated=$1 WHERE story_id=$2`,
+		timeNow, storyID)
+
+	if pgErr, okay := errors.AsType[*pgconn.PgError](err); okay && (pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) || pgerrcode.IsDataException(pgErr.Code)) {
+		return fverrors.GenericInvalidRequestErr
+	} else if err != nil {
+		return fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred.", err)
+	}
+
+	return nil
+}
+
+func GetLatestStories(limit int) ([]models.Story, fverrors.Error) {
+	rows, err := dbConn.Query(context.Background(),
+		`SELECT 
+    story_id, story_name, description, visibility, last_updated, chapters, username 
+	FROM stories
+	WHERE visibility>1
+	ORDER BY last_updated DESC
+	LIMIT $1 OFFSET 0`, limit)
+
+	if err != nil {
+		return nil, fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred.", err)
+	}
+	defer rows.Close()
+
+	stories := make([]models.Story, 0, limit)
+	for rows.Next() {
+		story := models.Story{}
+
+		err := rows.Scan(&story.StoryID, &story.StoryName, &story.Description, &story.Visibility, &story.LastUpdated,
+			&story.Chapters, &story.Username)
+
+		if err != nil {
+			return nil, fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred.", err)
+		}
+
+		stories = append(stories, story)
+	}
+
+	return stories, nil
 }

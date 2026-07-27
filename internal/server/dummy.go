@@ -50,7 +50,9 @@ func (s *Server) newDummyChapterHandler(c *gin.Context) {
 		FileID:      rand.Text()[:15],
 	}
 
-	err := db.InsertNewChapter(chapter)
+	timeNow := db.TimeNow()
+
+	err := db.InsertNewChapter(chapter, timeNow)
 	if err != nil {
 		fverrors.SendErrorResponse(c, err)
 		return

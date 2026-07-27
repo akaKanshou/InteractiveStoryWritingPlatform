@@ -45,7 +45,7 @@ type HomePageData struct {
 	Err error
 }
 
-func NewHomePageData(user *User, trendingStories, editorsPicks, recentlyUpdated []Story) *HomePageData {
+func NewHomePageData(user *User, editorsPicks, trendingStories, recentlyUpdated []Story) *HomePageData {
 	data := &HomePageData{
 		User: user,
 
@@ -54,7 +54,9 @@ func NewHomePageData(user *User, trendingStories, editorsPicks, recentlyUpdated 
 		RecentlyUpdated: recentlyUpdated,
 	}
 
-	data.PFP, _ = strconv.Atoi(user.UserID[len(user.UserID)-2:])
+	if user.UserID != "" {
+		data.PFP, _ = strconv.Atoi(user.UserID[len(user.UserID)-2:])
+	}
 
 	return data
 }

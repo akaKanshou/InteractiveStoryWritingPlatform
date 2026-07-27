@@ -102,10 +102,10 @@
 					</div>
 				</div>
 
-				{{if .EditorsPicks}}
+				{{if .TrendingStories}}
 					<div class="home-stories-section" id="trendingStories">
 						<div class="stories-grid" id="trendingStoriesGrid">
-							{{range .EditorsPicks}}
+							{{range .TrendingStories}}
 								{{template "storyCard" .}}
 							{{end}}
 						</div>
@@ -127,7 +127,7 @@
 				{{if .RecentlyUpdated}}
 					<div class="home-stories-section" id="recentlyUpdatedStories">
 						<div class="stories-grid" id="recentlyUpdatedStoriesGrid">
-							{{range .EditorsPicks}}
+							{{range .RecentlyUpdated}}
 								{{template "storyCard" .}}
 							{{end}}
 						</div>

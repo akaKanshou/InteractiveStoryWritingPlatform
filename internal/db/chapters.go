@@ -76,10 +76,10 @@ func ReadFromFile(fileID string) (string, fverrors.Error) {
 	return string(file), nil
 }
 
-func InsertNewChapter(chapter *models.Chapter) fverrors.Error {
+func InsertNewChapter(chapter *models.Chapter, timeNow int64) fverrors.Error {
 	_, err := dbConn.Exec(context.Background(),
-		"INSERT INTO chapters (chapter_id, chapter_name, story_id, file_id) VALUES ($1, $2, $3, $4)",
-		chapter.ChapterID, chapter.ChapterName, chapter.StoryID, chapter.FileID,
+		"INSERT INTO chapters (chapter_id, chapter_name, story_id, file_id, last_updated) VALUES ($1, $2, $3, $4, $5)",
+		chapter.ChapterID, chapter.ChapterName, chapter.StoryID, chapter.FileID, timeNow,
 	)
 
 	if err == nil {
@@ -93,10 +93,10 @@ func InsertNewChapter(chapter *models.Chapter) fverrors.Error {
 	return fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred", err)
 }
 
-func UpdateChapter(chapter *models.Chapter) fverrors.Error {
+func UpdateChapter(chapter *models.Chapter, timeNow int64) fverrors.Error {
 	_, err := dbConn.Exec(context.Background(),
-		"UPDATE chapters SET chapter_name=$1 WHERE chapter_id=$2",
-		chapter.ChapterName, chapter.ChapterID)
+		"UPDATE chapters SET chapter_name=$1, last_updated=$3 WHERE chapter_id=$2",
+		chapter.ChapterName, chapter.ChapterID, timeNow)
 
 	if pgErr, okay := errors.AsType[*pgconn.PgError](err); okay && (pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) || pgerrcode.IsDataException(pgErr.Code)) {
 		return fverrors.GenericInvalidRequestErr

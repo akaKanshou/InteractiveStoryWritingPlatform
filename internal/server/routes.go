@@ -31,7 +31,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 	}))
 
 	// public routes
-	r.GET("/", s.helloWorldHandler)
+	r.GET("/", s.pagesHandler)
+	r.GET("/index", s.helloWorldHandler)
 	r.GET("/home", s.homeHandler)
 
 	// auth routes
@@ -696,4 +697,17 @@ func (s *Server) homeHandler(c *gin.Context) {
 	}
 
 	servePage(c, "home", models.NewHomePageData(user, stories[0], stories[1], stories[2]))
+}
+
+func (s *Server) pagesHandler(c *gin.Context) {
+	user, err := auth.GetUserFromSession(c)
+	if err != nil && !errors.Is(err, fverrors.NoLoginErr) {
+		fverrors.SendErrorResponse(c, err)
+		return
+	} else if !auth.IsPublicAuthenticated(user) {
+		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
+		return
+	}
+
+	servePage(c, "pages", nil)
 }

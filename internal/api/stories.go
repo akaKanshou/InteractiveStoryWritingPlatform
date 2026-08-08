@@ -49,7 +49,7 @@ func CreateNewStory(c *gin.Context, user *models.User) (string, fverrors.Error) 
 		return "", err
 	}
 
-	return db.InsertNewStory(storyName, description, rand.Text()[:15], visibilityVal, user)
+	return db.InsertNewStory(storyName, description, rand.Text()[:15], visibilityVal, c.PostForm("forkable") == "true", user)
 }
 
 func EditStory(c *gin.Context, user *models.User) fverrors.Error {
@@ -73,6 +73,7 @@ func EditStory(c *gin.Context, user *models.User) fverrors.Error {
 	}
 
 	story.StoryName, story.Description = c.PostForm("story_name"), c.PostForm("description")
+	story.Forkable = c.PostForm("forkable") == "true"
 
 	if err = db.UpdateStory(story); err != nil {
 		return err

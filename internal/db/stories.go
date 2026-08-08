@@ -54,12 +54,13 @@ func GetStoryByID(storyID string) (*models.Story, fverrors.Error) {
 	}
 
 	pgErr := dbConn.QueryRow(context.Background(),
-		`SELECT username, story_name, description, visibility FROM stories WHERE story_id = $1`,
+		`SELECT username, story_name, description, visibility, forkable FROM stories WHERE story_id = $1`,
 		storyID).Scan(
 		&story.Username,
 		&story.StoryName,
 		&story.Description,
 		&story.Visibility,
+		&story.Forkable,
 	)
 	if pgErr != nil && errors.Is(pgErr, pgx.ErrNoRows) {
 		return nil, fverrors.StoryNotFoundError
@@ -71,13 +72,13 @@ func GetStoryByID(storyID string) (*models.Story, fverrors.Error) {
 }
 
 // InsertNewStory inserts a new story with given details. Sets last_updated to TimeNow().
-func InsertNewStory(storyName, storyDescription, storyID string, visibility models.StoryVisibility,
+func InsertNewStory(storyName, storyDescription, storyID string, visibility models.StoryVisibility, forkable bool,
 	user *models.User) (string,
 	fverrors.Error) {
 	_, err := dbConn.Exec(context.Background(),
-		`INSERT INTO stories (story_name, description, visibility, username, story_id, last_updated) VALUES ($1, $2, $3,
-$4 ,$5, $6)`,
-		storyName, storyDescription, visibility, user.Username, storyID, TimeNow())
+		`INSERT INTO stories (story_name, description, visibility, username, story_id, last_updated, forkable) 
+		VALUES ($1, $2, $3, $4 ,$5, $6, $7)`,
+		storyName, storyDescription, visibility, user.Username, storyID, TimeNow(), forkable)
 
 	if err == nil {
 		return storyID, nil
@@ -97,8 +98,9 @@ $4 ,$5, $6)`,
 // New values from these fields are taken from "story" argument. story.Username is not used. Sets last_updated to TimeNow().
 func UpdateStory(story *models.Story) fverrors.Error {
 	_, err := dbConn.Exec(context.Background(),
-		`UPDATE stories SET description=$1, visibility=$2, story_name=$3, last_updated=$5 WHERE story_id=$4`,
-		story.Description, story.Visibility, story.StoryName, story.StoryID, TimeNow())
+		`UPDATE stories 
+		SET description=$1, visibility=$2, story_name=$3, last_updated=$5, forkable=$6 WHERE story_id=$4`,
+		story.Description, story.Visibility, story.StoryName, story.StoryID, TimeNow(), story.Forkable)
 
 	if pgErr, okay := errors.AsType[*pgconn.PgError](err); okay && (pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) || pgerrcode.IsDataException(pgErr.Code)) {
 		return fverrors.GenericInvalidRequestErr

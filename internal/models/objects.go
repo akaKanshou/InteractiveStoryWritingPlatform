@@ -23,6 +23,7 @@ type Story struct {
 	StoryName   string          `json:"story_name" db:"story_name"`
 	Description string          `json:"description" db:"description"`
 	Visibility  StoryVisibility `json:"visibility" db:"visibility"`
+	Forkable    bool            `json:"forkable" db:"forkable"`
 	Username    string          `json:"username" db:"username"`
 	LastUpdated int64           `json:"last_updated,omitempty" db:"last_updated"`
 	Chapters    int             `json:"chapters" db:"chapters"`
@@ -34,6 +35,7 @@ type Chapter struct {
 	StoryID     string `json:"story_id" db:"story_id"`
 	Content     string `json:"content,omitempty" db:"content"`
 	LastUpdated int64  `json:"last_updated,omitempty" db:"last_updated"`
+	Username    string `json:"username" db:"username"`
 
 	FileID string `json:"-" db:"file_id"`
 }

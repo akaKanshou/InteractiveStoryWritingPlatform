@@ -15,16 +15,13 @@ func CreateNewChapter(c *gin.Context, user *models.User) (string, fverrors.Error
 		return "", err
 	}
 
-	if story.Username != user.Username {
-		return "", fverrors.UnAuthorizedErr
-	}
-
 	chapter := &models.Chapter{
 		ChapterID:   rand.Text()[:15],
 		ChapterName: c.PostForm("chapter_name"),
 		StoryID:     story.StoryID,
 		Content:     c.PostForm("content"),
 		FileID:      rand.Text()[:15],
+		Username:    c.PostForm("username"),
 	}
 
 	timeNow := db.TimeNow()
@@ -136,21 +133,12 @@ func CreateNewEdge(c *gin.Context, user *models.User) fverrors.Error {
 		return err
 	}
 
-	toChapter, err := db.GetChapterByID(to)
-	if err != nil {
-		return err
-	}
-
-	if fromChapter.StoryID != toChapter.StoryID {
-		return fverrors.GenericInvalidRequestErr
-	}
-
 	story, err := db.GetStoryByID(fromChapter.StoryID)
 	if err != nil {
 		return err
 	}
 
-	if story.Username != user.Username {
+	if (story.Username != user.Username) && (!story.Forkable) {
 		return fverrors.UnAuthorizedErr
 	}
 

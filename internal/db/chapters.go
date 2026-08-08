@@ -24,11 +24,12 @@ func GetChapterByID(chapterID string) (*models.Chapter, fverrors.Error) {
 	}
 
 	err := dbConn.QueryRow(context.Background(),
-		"SELECT chapter_name, story_id, file_id FROM chapters WHERE chapter_id=$1",
+		"SELECT chapter_name, story_id, file_id, username FROM chapters WHERE chapter_id=$1",
 		chapterID).Scan(
 		&chapter.ChapterName,
 		&chapter.StoryID,
 		&chapter.FileID,
+		&chapter.Username,
 	)
 
 	if err == nil {
@@ -78,8 +79,9 @@ func ReadFromFile(fileID string) (string, fverrors.Error) {
 
 func InsertNewChapter(chapter *models.Chapter, timeNow int64) fverrors.Error {
 	_, err := dbConn.Exec(context.Background(),
-		"INSERT INTO chapters (chapter_id, chapter_name, story_id, file_id, last_updated) VALUES ($1, $2, $3, $4, $5)",
-		chapter.ChapterID, chapter.ChapterName, chapter.StoryID, chapter.FileID, timeNow,
+		`INSERT INTO chapters (chapter_id, chapter_name, story_id, file_id, last_updated, username) VALUES ($1, $2, 
+$3, $4, $5, $6)`,
+		chapter.ChapterID, chapter.ChapterName, chapter.StoryID, chapter.FileID, timeNow, chapter.Username,
 	)
 
 	if err == nil {
@@ -90,7 +92,7 @@ func InsertNewChapter(chapter *models.Chapter, timeNow int64) fverrors.Error {
 		return fverrors.GenericInvalidRequestErr
 	}
 
-	return fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred", err)
+	return fverrors.NewDBError(http.StatusInternalServerError, `An unexpected error occurred`, err)
 }
 
 func UpdateChapter(chapter *models.Chapter, timeNow int64) fverrors.Error {

@@ -81,6 +81,11 @@
 					<option value="private" selected>Private</option>
 					<option value="public">Public</option>
 				</select>
+				<label for="forkable">Forkable: </label>
+				<select id="forkable">
+					<option value="false" selected>False</option>
+					<option value="true">True</option>
+				</select>
 
 				<label for="storyid">Story ID: </label>
 				<input type="text" id="storyid" />
@@ -266,11 +271,13 @@
 				const sname = document.getElementById("storyname").value;
 				const sdesc = document.getElementById("storydesc").value;
 				const visb = document.getElementById("visibility").value;
+				const forkable = document.getElementById("forkable").value;
 
 				const formdata = new FormData();
 				formdata.append("story_name", sname);
 				formdata.append("description", sdesc);
 				formdata.append("visibility", visb);
+				formdata.append("forkable", forkable);
 
 				const req = new Request("https://localhost:8080/api/newstory", {
 					method: "POST",
@@ -308,12 +315,14 @@
 				const sdesc = document.getElementById("storydesc").value;
 				const visb = document.getElementById("visibility").value;
 				const storyid = document.getElementById("storyid").value;
+				const forkable = document.getElementById("forkable").value;
 
 				const formdata = new FormData();
 				formdata.append("story_name", sname);
 				formdata.append("description", sdesc);
 				formdata.append("visibility", visb);
 				formdata.append("story_id", storyid);
+				formdata.append("forkable", forkable);
 
 				const req = new Request("https://localhost:8080/api/editstory", {
 					method: "POST",

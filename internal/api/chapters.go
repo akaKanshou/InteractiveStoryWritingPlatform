@@ -15,6 +15,10 @@ func CreateNewChapter(c *gin.Context, user *models.User) (string, fverrors.Error
 		return "", err
 	}
 
+	if story.Username != user.Username {
+		return "", fverrors.UnAuthorizedErr
+	}
+
 	chapter := &models.Chapter{
 		ChapterID:   rand.Text()[:15],
 		ChapterName: c.PostForm("chapter_name"),

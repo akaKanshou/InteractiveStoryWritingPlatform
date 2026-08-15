@@ -53,6 +53,11 @@ func (s *Server) RegisterRoutes() http.Handler {
 		userGroup.GET("/mystories", s.userMyStoriesHandler)
 	}
 
+	storyGroup := r.Group("/story")
+	{
+		storyGroup.GET("/new", s.newStoryPageHandler)
+	}
+
 	// api routes
 	publicApi := r.Group("/api")
 	{
@@ -699,4 +704,17 @@ func (s *Server) pagesHandler(c *gin.Context) {
 	}
 
 	servePage(c, "pages", nil)
+}
+
+func (s *Server) newStoryPageHandler(c *gin.Context) {
+	user, err := auth.GetUserFromSession(c)
+	if err != nil {
+		c.Writer.WriteHeader(http.StatusInternalServerError)
+		return
+	} else if !auth.IsPrivateAuthenticated(user) {
+		c.Writer.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	servePage(c, "newstory", nil)
 }

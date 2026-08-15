@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>newstory</title>
+	<link rel="stylesheet" href="https://localhost:8080/css/newstory.css">
+</head>
+<body>
+	<header id="top">
+		<h1 id="head">CREATE STORY</h1>
+		<h2 id="head2">"Turn your ideas into a story"</h2>
+	</header>
+	<div class="bodyy" >
+		<div class="mid">
+		<div id="storytitle"> Story Title</div>
+		<textarea id="titlewrite"  rows="5" cols="40" placeholder="Enter Title"></textarea>
+		</div>
+		<div class="mid2">
+		<div id="discrip">Description</div>
+		<textarea id="discrip2"  rows="5" cols="40" placeholder="Enter Description"></textarea>
+		</div>
+		<!-- <div class="mid3">
+		<div id="content">Story Content</div>
+		<div id="content2"></div>
+		</div> -->
+		<div class="visi">
+			<div id="visi2">Visibility</div>
+			<div class="buttons">
+			<button id="public">Public</button>
+			<button id="private">Private</button>
+			<script>
+			const privatebtn=document.getElementById("private");
+			privatebtn.addEventListener("click",()=>{
+               privatebtn.classList.toggle("active");
+			//    createbtn.classList.remove("active");
+			});
+			const publicbtn=document.getElementById("public");
+			publicbtn.addEventListener("click",()=>{
+               publicbtn.classList.toggle("active");
+			//    createbtn.classList.remove("active");
+			});
+		</script>
+
+			</div>
+		</div>
+	</div>
+	<footer class="foot">
+		<button id="create">Create</button>
+	</footer>
+	<script src ="https://localhost:8080/scripts/newstory.js"></script>
+</body>
+</html>

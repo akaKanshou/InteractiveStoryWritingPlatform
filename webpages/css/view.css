@@ -32,6 +32,7 @@ body{
 }
 #storytitle{
     font-size: 28px;
+    color: aliceblue;
 }
 #titlewrite{
     height: 40px;
@@ -40,12 +41,22 @@ body{
     background-color: aliceblue;
     border-radius: 7px;
 }
-.mid2{
+.mid3{
     color: #94A3B8;
     padding-left: 50px;
     display: flex;
     flex-direction: column;
     gap: 6px;
+    margin-left: 150px;
+    margin-top: 40px ;
+}
+.mid2{
+    color: #94A3B8;
+    padding-left: 50px;
+    display: flex;
+    flex-direction: row;
+    font-size: 28px;
+    gap: 16.5%;
     margin-left: 150px;
     margin-top: 40px ;
 }
@@ -59,14 +70,14 @@ body{
     background-color: aliceblue;
     border-radius: 7px;
 }
-.mid3{
+/* .mid3{
     color: #94A3B8;
     padding-left: 50px;
     display: flex;
     flex-direction: column;
     gap: 6px;
     margin-top: 40px ;
-}
+} */
 #content{
     font-size: 28px;
 }
@@ -77,33 +88,14 @@ body{
     background-color: aliceblue;
     border-radius: 7px;   
 }
-.visi{
+.author{
     color: #94A3B8;
-    padding-left: 500px;
+    padding-left: 561px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    /* gap: 40px; */
     margin-top: 0 ;
-}
-#visi2{
-    font-size: 25px;
-}
-.buttons button{
-    width: 120px;
-    height: 45px;
-    margin-right: 15px;
-    border-radius: 8px;
-    border: 1px solid #F8FAFC;
-    background: #CBD5E1;
-    color: black;
-    font-size: 16px;
-    cursor: pointer;
-    /* transition: 0.2s; */
-}
-.buttons button.active{
-    background: #7C3AED;
-    border-color: #7C3AED;
-    color: #F8FAFC;
+     font-size: 28px;
 }
 .foot{
     display: flex;
@@ -113,7 +105,7 @@ body{
     height: 50px;
     width: 200px;
     border-radius: 25px;
-    margin-left: 25%;
+    margin-left: 15%;
     cursor: pointer;
     font-size: x-large;
     margin-top: 20px;
@@ -122,6 +114,11 @@ body{
     font-size: 25px;
 }
 #edit:hover{
+    background: #7C3AED;
+    border-color: #7C3AED;
+    color: #F8FAFC;
+}
+#fork:hover{
     background: #7C3AED;
     border-color: #7C3AED;
     color: #F8FAFC;

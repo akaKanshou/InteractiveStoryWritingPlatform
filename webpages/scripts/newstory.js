@@ -1,11 +1,22 @@
 let visibility = "";
 
-document.getElementById("public").addEventListener("click", () => {
+function setButtonOffAll() {
+    for (let i = 0; i < document.querySelectorAll("button").length; i++) {
+    document.querySelectorAll("button")[i].classList.remove("active")
+    }
+}
+
+document.getElementById("public").addEventListener("click", (e) => {
+    setButtonOffAll();
     visibility = "public";
+    // document.getElementById("public").classList.add("active");
+    e.target.classList.add("active");
 });
 
 document.getElementById("private").addEventListener("click", () => {
+    setButtonOffAll();
     visibility = "private";
+     e.target.classList.add("active");
 });
 
 document.getElementById("create").addEventListener("click", async () => {

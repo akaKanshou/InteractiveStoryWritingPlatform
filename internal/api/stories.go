@@ -11,6 +11,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func GetStoryByID(user *models.User, c *gin.Context) (*models.Story, fverrors.Error) {
+	story, err := db.GetStoryByID(c.Param("story_id"))
+	if err != nil {
+		return nil, err
+	}
+
+	if (story.Visibility == models.VisibilityPrivate) && (user.Username != story.Username) {
+		return nil, fverrors.UnAuthorizedErr
+	}
+
+	return story, nil
+}
+
 func GetStoriesByUser(user *models.User, c *gin.Context, username, visibility string) ([]models.Story, fverrors.Error) {
 	if err := models.ValidateUsername(username); err != nil {
 		return nil, err

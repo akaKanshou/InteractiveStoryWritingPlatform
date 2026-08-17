@@ -54,13 +54,14 @@ func GetStoryByID(storyID string) (*models.Story, fverrors.Error) {
 	}
 
 	pgErr := dbConn.QueryRow(context.Background(),
-		`SELECT username, story_name, description, visibility, forkable FROM stories WHERE story_id = $1`,
+		`SELECT username, story_name, description, visibility, forkable, last_updated FROM stories WHERE story_id = $1`,
 		storyID).Scan(
 		&story.Username,
 		&story.StoryName,
 		&story.Description,
 		&story.Visibility,
 		&story.Forkable,
+		&story.LastUpdated,
 	)
 	if pgErr != nil && errors.Is(pgErr, pgx.ErrNoRows) {
 		return nil, fverrors.StoryNotFoundError

@@ -36,6 +36,7 @@ type Chapter struct {
 	Content     string `json:"content,omitempty" db:"content"`
 	LastUpdated int64  `json:"last_updated,omitempty" db:"last_updated"`
 	Username    string `json:"username" db:"username"`
+	Index       int    `json:"index" db:"index"`
 
 	FileID string `json:"-" db:"file_id"`
 }

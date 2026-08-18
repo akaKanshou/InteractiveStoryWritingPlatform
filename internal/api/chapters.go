@@ -5,6 +5,9 @@ import (
 	"forgeverse/internal/db"
 	fverrors "forgeverse/internal/errors"
 	"forgeverse/internal/models"
+	"io"
+	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -118,7 +121,7 @@ func GetChapterByID(user *models.User, c *gin.Context) (*models.Chapter, fverror
 		return nil, fverrors.UnAuthorizedErr
 	}
 
-	chapter.Content, err = db.ReadFromFile(chapter.FileID)
+	//chapter.Content, err = db.ReadFromFile(chapter.FileID)
 
 	return chapter, err
 }
@@ -174,4 +177,23 @@ func GetEdgesByChapter(user *models.User, c *gin.Context) ([]*models.Edge, fverr
 	}
 
 	return db.GetEdgesByChapter(chapterID)
+}
+
+func WriteContent(c *gin.Context, chapter *models.Chapter) {
+	c.Header("Content-Type", "application/json; charset=utf-8")
+	c.Writer.WriteHeader(http.StatusOK)
+	c.Writer.WriteHeaderNow()
+
+	file, err := os.Open(`./chapters/` + chapter.FileID)
+	if err != nil {
+		c.Abort()
+		return
+	}
+	defer file.Close()
+
+	_, err = io.Copy(c.Writer, file)
+	if err != nil {
+		c.Abort()
+		return
+	}
 }

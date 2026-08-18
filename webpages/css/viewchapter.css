@@ -11,6 +11,12 @@ h1 {
     font-size: 2rem;
 }
 
+h2 {
+    width: 100%;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
 html * {
     font-family: "Cormorant Garamond", serif !important;
 }
@@ -40,27 +46,6 @@ html * {
     display: inline-block;
 }
 
-input {
-    border-radius: 7px;
-    background-color: aliceblue;
-}
-
-#chapterNameTextInput, #storyIDTextInput {
-    width: 50ch;
-    margin-left: 10px;
-}
-
-#chapterNumNumberInput {
-    width: fit-content;
-    margin-left: 10px;
-}
-
-#edgesIncoming, #edgesOutgoing {
-    width: 67ch;
-    display: block;
-}
-
-
 button {
     border-radius: 8px;
     border: 1px solid #F8FAFC;
@@ -85,20 +70,20 @@ button:hover{
     width: 100%;
 }
 
+.flexColumn {
+    flex-direction: column !important;
+}
+
 .justifyCenter {
     display: flex !important;
     justify-content: center !important;
 }
 
-#editorJSRow {
-    border-radius: 15px;
-    background-color: aliceblue !important;
-}
-
 .editorContainer {
-    color: #0F172A;
+    border-radius: 15px;
+    color: aliceblue;
 
-    width: 85%
+    width: 100%;
 }
 
 input, label, button {
@@ -108,7 +93,7 @@ input, label, button {
 /*
 editorJS css
 https://github.com/codex-team/editor.js/discussions/1891#discussioncomment-10853881
- */
+*/
 
 /*
    Example: editor.css

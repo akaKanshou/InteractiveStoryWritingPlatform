@@ -62,7 +62,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	chapterGroup := r.Group("/chapter")
 	{
 		chapterGroup.GET("/new", s.newChapterPageHandler)
-		storyGroup.GET("/view/:chapter_id", s.viewChapterPageHandler)
+		chapterGroup.GET("/view/:chapter_id", s.viewChapterPageHandler)
 	}
 
 	// api routes
@@ -71,6 +71,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 		publicApi.GET("/getstories/:username", s.getUserStoriesHandler)
 		publicApi.GET("/getmystories", s.getMyStoriesHandler)
 		publicApi.GET("/getchapter/:chapter_id", s.getChapterHandler)
+		publicApi.GET("/getcontent/:chapter_id", s.getChapterContentHandler)
 
 		publicApi.GET("/getstorychapters/:story_id", s.getStoryChaptersHandler)
 
@@ -778,5 +779,21 @@ func (s *Server) viewChapterPageHandler(c *gin.Context) {
 	}
 
 	servePage(c, "viewchapter", models.NewChapterInfoDat(chapter))
+	return
+}
+
+func (s *Server) getChapterContentHandler(c *gin.Context) {
+	user, err := auth.GetUserFromSession(c)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	chapter, err := api.GetChapterByID(user, c)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+	}
+
+	api.WriteContent(c, chapter)
 	return
 }

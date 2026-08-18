@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const editorJS = new EditorJS({
         readOnly: false,
         holder: "editorJS",
+        minHeight: 30,
         tools: {
             header: {
                 class: Header,
@@ -70,6 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append("chapter_name", document.getElementById("chapterNameTextInput").value);
         formData.append("story_id", document.getElementById("storyIDTextInput").value);
         formData.append("content", content);
+        formData.append("index", document.getElementById("chapterNumNumberInput").value);
+        formData.append("edgesInc", document.getElementById("edgesIncoming").value)
+        formData.append("edgesOut", document.getElementById("edgesOutgoing").value)
 
         const req = new Request("https://localhost:8080/api/newchapter", {
             method: "POST",

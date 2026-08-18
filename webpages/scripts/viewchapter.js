@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const editorJS = new EditorJS({
         readOnly: true,
         holder: "editorJS",
+        minHeight: 30,
         tools: {
             header: {
                 class: Header,

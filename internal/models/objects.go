@@ -44,4 +44,5 @@ type Chapter struct {
 type Edge struct {
 	FromChapter string `json:"from_chapter" db:"from_chapter"`
 	ToChapter   string `json:"to_chapter" db:"to_chapter"`
+	Fork        bool   `json:"fork" db:"fork"`
 }

@@ -24,12 +24,14 @@ func GetChapterByID(chapterID string) (*models.Chapter, fverrors.Error) {
 	}
 
 	err := dbConn.QueryRow(context.Background(),
-		"SELECT chapter_name, story_id, file_id, username FROM chapters WHERE chapter_id=$1",
+		`SELECT chapter_name, story_id, file_id, username, last_updated, index FROM chapters WHERE chapter_id=$1`,
 		chapterID).Scan(
 		&chapter.ChapterName,
 		&chapter.StoryID,
 		&chapter.FileID,
 		&chapter.Username,
+		&chapter.LastUpdated,
+		&chapter.Index,
 	)
 
 	if err == nil {
@@ -79,9 +81,11 @@ func ReadFromFile(fileID string) (string, fverrors.Error) {
 
 func InsertNewChapter(chapter *models.Chapter, timeNow int64) fverrors.Error {
 	_, err := dbConn.Exec(context.Background(),
-		`INSERT INTO chapters (chapter_id, chapter_name, story_id, file_id, last_updated, username) VALUES ($1, $2, 
-$3, $4, $5, $6)`,
+		`INSERT INTO chapters (chapter_id, chapter_name, story_id, file_id, last_updated, username, index) VALUES ($1, 
+$2, 
+$3, $4, $5, $6, $7)`,
 		chapter.ChapterID, chapter.ChapterName, chapter.StoryID, chapter.FileID, timeNow, chapter.Username,
+		chapter.Index,
 	)
 
 	if err == nil {
@@ -97,8 +101,8 @@ $3, $4, $5, $6)`,
 
 func UpdateChapter(chapter *models.Chapter, timeNow int64) fverrors.Error {
 	_, err := dbConn.Exec(context.Background(),
-		"UPDATE chapters SET chapter_name=$1, last_updated=$3 WHERE chapter_id=$2",
-		chapter.ChapterName, chapter.ChapterID, timeNow)
+		`UPDATE chapters SET chapter_name=$1, last_updated=$3, index=$4 WHERE chapter_id=$2`,
+		chapter.ChapterName, chapter.ChapterID, timeNow, chapter.Index)
 
 	if pgErr, okay := errors.AsType[*pgconn.PgError](err); okay && (pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) || pgerrcode.IsDataException(pgErr.Code)) {
 		return fverrors.GenericInvalidRequestErr
@@ -111,7 +115,9 @@ func UpdateChapter(chapter *models.Chapter, timeNow int64) fverrors.Error {
 
 func GetChaptersByStory(storyID string, page int) ([]*models.Chapter, fverrors.Error) {
 	rows, err := dbConn.Query(context.Background(),
-		"SELECT chapter_name, chapter_id FROM chapters WHERE story_id=$1 LIMIT 50 OFFSET $2", storyID, page)
+		`SELECT chapter_name, chapter_id, index, last_updated FROM chapters WHERE story_id=$1 ORDER BY index LIMIT 50 OFFSET $2`,
+		storyID,
+		page)
 
 	if err != nil {
 		return nil, fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred", err)
@@ -125,7 +131,7 @@ func GetChaptersByStory(storyID string, page int) ([]*models.Chapter, fverrors.E
 			StoryID: storyID,
 		}
 
-		err := rows.Scan(&chapter.ChapterName, &chapter.ChapterID)
+		err := rows.Scan(&chapter.ChapterName, &chapter.ChapterID, &chapter.Index, &chapter.LastUpdated)
 		if err != nil {
 			return nil, fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred", err)
 		}
@@ -140,10 +146,10 @@ func GetChaptersByStory(storyID string, page int) ([]*models.Chapter, fverrors.E
 	return chapters, nil
 }
 
-func InsertNewEdge(from, to string) fverrors.Error {
+func InsertNewEdge(from, to string, fork bool) fverrors.Error {
 	_, err := dbConn.Exec(context.Background(),
-		"INSERT INTO edges (from_chap, to_chap) VALUES ($1, $2)",
-		from, to)
+		`INSERT INTO edges (from_chap, to_chap, fork) VALUES ($1, $2, $3)`,
+		from, to, fork)
 
 	if err == nil {
 		return nil
@@ -160,7 +166,7 @@ func InsertNewEdge(from, to string) fverrors.Error {
 
 func GetEdgesByChapter(chapterID string) ([]*models.Edge, fverrors.Error) {
 	rows, err := dbConn.Query(context.Background(),
-		"SELECT from_chap, to_chap FROM edges WHERE from_chap=$1 OR to_chap=$1",
+		`SELECT from_chap, to_chap, fork FROM edges WHERE from_chap=$1 OR to_chap=$1`,
 		chapterID)
 
 	if err != nil {
@@ -173,7 +179,7 @@ func GetEdgesByChapter(chapterID string) ([]*models.Edge, fverrors.Error) {
 	for rows.Next() {
 		edge := &models.Edge{}
 
-		if err := rows.Scan(&edge.FromChapter, &edge.ToChapter); err != nil {
+		if err := rows.Scan(&edge.FromChapter, &edge.ToChapter, &edge.Fork); err != nil {
 			return nil, fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred", err)
 		}
 

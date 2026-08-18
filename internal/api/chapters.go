@@ -8,6 +8,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,6 +24,11 @@ func CreateNewChapter(c *gin.Context, user *models.User) (string, fverrors.Error
 		return "", fverrors.UnAuthorizedErr
 	}
 
+	index, convErr := strconv.Atoi(c.PostForm("index"))
+	if convErr != nil {
+		return "", fverrors.GenericInvalidRequestErr
+	}
+
 	chapter := &models.Chapter{
 		ChapterID:   rand.Text()[:15],
 		ChapterName: c.PostForm("chapter_name"),
@@ -29,6 +36,7 @@ func CreateNewChapter(c *gin.Context, user *models.User) (string, fverrors.Error
 		Content:     c.PostForm("content"),
 		FileID:      rand.Text()[:15],
 		Username:    user.Username,
+		Index:       index,
 	}
 
 	timeNow := db.TimeNow()
@@ -38,8 +46,49 @@ func CreateNewChapter(c *gin.Context, user *models.User) (string, fverrors.Error
 		return "", err
 	}
 
+	err = db.UpdateStoryLastUpdated(story.StoryID, timeNow)
+	if err != nil {
+		return "", err
+	}
+
 	if err = db.WriteToFile(chapter.FileID, chapter.Content); err != nil {
 		return "", err
+	}
+
+	edgePoints := strings.Split(c.PostForm("edgesInc"), ",")
+	for _, chapIDs := range edgePoints {
+		if err := models.ValidateRID(chapIDs); err != nil {
+			continue
+		}
+
+		eStory, err := db.GetStoryByID(chapter.StoryID)
+		if err != nil {
+			continue
+		}
+
+		if (eStory.Visibility == models.VisibilityPrivate) && (eStory.Username != user.Username) {
+			continue
+		}
+
+		_ = db.InsertNewEdge(chapIDs, chapter.ChapterID, eStory.StoryID != story.StoryID)
+	}
+
+	edgePoints = strings.Split(c.PostForm("edgesOut"), ",")
+	for _, chapIDs := range edgePoints {
+		if err := models.ValidateRID(chapIDs); err != nil {
+			continue
+		}
+
+		eStory, err := db.GetStoryByID(chapter.StoryID)
+		if err != nil {
+			continue
+		}
+
+		if (eStory.Visibility == models.VisibilityPrivate) && (eStory.Username != user.Username) {
+			continue
+		}
+
+		_ = db.InsertNewEdge(chapter.ChapterID, chapIDs, eStory.StoryID != story.StoryID)
 	}
 
 	return chapter.ChapterID, nil
@@ -121,8 +170,6 @@ func GetChapterByID(user *models.User, c *gin.Context) (*models.Chapter, fverror
 		return nil, fverrors.UnAuthorizedErr
 	}
 
-	//chapter.Content, err = db.ReadFromFile(chapter.FileID)
-
 	return chapter, err
 }
 
@@ -140,16 +187,27 @@ func CreateNewEdge(c *gin.Context, user *models.User) fverrors.Error {
 		return err
 	}
 
+	toChapter, err := db.GetChapterByID(to)
+	if err != nil {
+		return err
+	}
+
 	story, err := db.GetStoryByID(fromChapter.StoryID)
 	if err != nil {
 		return err
 	}
 
-	if (story.Username != user.Username) && (!story.Forkable) {
+	if (story.Visibility == models.VisibilityPrivate) && (story.Username != user.Username) {
 		return fverrors.UnAuthorizedErr
 	}
 
-	if err := db.InsertNewEdge(from, to); err != nil {
+	if (fromChapter.StoryID == toChapter.StoryID) && (fromChapter.Index >= toChapter.Index) {
+		return fverrors.GenericInvalidRequestErr
+	}
+
+	fork := fromChapter.StoryID != toChapter.StoryID
+
+	if err := db.InsertNewEdge(from, to, fork); err != nil {
 		return err
 	}
 

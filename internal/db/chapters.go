@@ -192,3 +192,14 @@ func GetEdgesByChapter(chapterID string) ([]*models.Edge, fverrors.Error) {
 
 	return edges, nil
 }
+
+func DeleteChapter(chapter *models.Chapter) fverrors.Error {
+	_, err := dbConn.Exec(context.Background(),
+		`DELETE FROM chapters WHERE chapter_id=$1`, chapter.ChapterID)
+
+	if err != nil {
+		return fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred", err)
+	}
+
+	return nil
+}

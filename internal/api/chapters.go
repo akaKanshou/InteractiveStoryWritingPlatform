@@ -46,7 +46,7 @@ func CreateNewChapter(c *gin.Context, user *models.User) (string, fverrors.Error
 		return "", err
 	}
 
-	err = db.UpdateStoryLastUpdated(story.StoryID, timeNow)
+	err = db.UpdateStoryLastUpdated(story.StoryID, timeNow, +1)
 	if err != nil {
 		return "", err
 	}
@@ -121,7 +121,7 @@ func EditChapter(c *gin.Context, user *models.User) fverrors.Error {
 		return err
 	}
 
-	if err := db.UpdateStoryLastUpdated(story.StoryID, timeNow); err != nil {
+	if err := db.UpdateStoryLastUpdated(story.StoryID, timeNow, 0); err != nil {
 		return err
 	}
 
@@ -254,4 +254,32 @@ func WriteContent(c *gin.Context, chapter *models.Chapter) {
 		c.Abort()
 		return
 	}
+}
+
+func DeleteChapter(user *models.User, c *gin.Context) fverrors.Error {
+	chapterID := c.Param("chapter_id")
+	if err := models.ValidateRID(chapterID); err != nil {
+		return fverrors.GenericInvalidRequestErr
+	}
+
+	chapter, err := db.GetChapterByID(chapterID)
+	if err != nil {
+		return err
+	}
+
+	if chapter.Username != user.Username {
+		return fverrors.UnAuthorizedErr
+	}
+
+	err = db.DeleteChapter(chapter)
+	if err != nil {
+		return err
+	}
+
+	err = db.UpdateStoryLastUpdated(chapter.StoryID, db.TimeNow(), -1)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

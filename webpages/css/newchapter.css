@@ -85,6 +85,12 @@ button:hover{
     width: 100%;
 }
 
+.flexSpaceAround {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+}
+
 .justifyCenter {
     display: flex !important;
     justify-content: center !important;

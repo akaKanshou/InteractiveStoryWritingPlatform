@@ -63,6 +63,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	{
 		chapterGroup.GET("/new", s.newChapterPageHandler)
 		chapterGroup.GET("/view/:chapter_id", s.viewChapterPageHandler)
+		chapterGroup.GET("/edit/:chapter_id", s.editChapterPageHandler)
 	}
 
 	// api routes
@@ -85,6 +86,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 		privateApi.POST("/newchapter", s.newChapterHandler)
 		privateApi.POST("/editchapter", s.editChapterHandler)
+		privateApi.DELETE("/deletechapter/:chapter_id", s.deleteChapterHandler)
 
 		privateApi.POST("/addedge", s.addEdgeHandler)
 	}
@@ -796,4 +798,47 @@ func (s *Server) getChapterContentHandler(c *gin.Context) {
 
 	api.WriteContent(c, chapter)
 	return
+}
+
+func (s *Server) editChapterPageHandler(c *gin.Context) {
+	user, err := auth.GetUserFromSession(c)
+	if (err != nil) && (!auth.IsPrivateAuthenticated(user)) {
+		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
+		return
+	} else if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	chapter, err := api.GetChapterByID(user, c)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	if chapter.Username != user.Username {
+		fverrors.SendErrorResponse(c, fverrors.UnAuthorizedErr)
+		return
+	}
+
+	servePage(c, "editchapter", models.NewChapterInfoDat(chapter))
+}
+
+func (s *Server) deleteChapterHandler(c *gin.Context) {
+	user, err := auth.GetUserFromSession(c)
+	if (err != nil) && (!auth.IsPrivateAuthenticated(user)) {
+		fverrors.SendErrorResponse(c, err)
+		return
+	} else if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	err = api.DeleteChapter(user, c)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
 }

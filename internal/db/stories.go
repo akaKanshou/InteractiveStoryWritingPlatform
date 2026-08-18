@@ -112,10 +112,10 @@ func UpdateStory(story *models.Story) fverrors.Error {
 	return nil
 }
 
-func UpdateStoryLastUpdated(storyID string, timeNow int64) fverrors.Error {
+func UpdateStoryLastUpdated(storyID string, timeNow int64, deltaChapters int) fverrors.Error {
 	_, err := dbConn.Exec(context.Background(),
-		`UPDATE stories SET last_updated=$1 WHERE story_id=$2`,
-		timeNow, storyID)
+		`UPDATE stories SET last_updated=$1, chapters=chapters+$3 WHERE story_id=$2`,
+		timeNow, storyID, deltaChapters)
 
 	if pgErr, okay := errors.AsType[*pgconn.PgError](err); okay && (pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) || pgerrcode.IsDataException(pgErr.Code)) {
 		return fverrors.GenericInvalidRequestErr

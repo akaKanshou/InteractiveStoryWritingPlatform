@@ -1,0 +1,103 @@
+body {
+    background-color:#0F172A;
+    margin: 0;
+    padding: 0;
+    color: aliceblue !important;
+}
+
+h1 {
+    width: 100%;
+    text-align: center;
+    font-size: 2rem;
+}
+
+html * {
+    font-family: "Cormorant Garamond", serif !important;
+}
+
+.main {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-self: center;
+    width: 80%;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    height: fit-content;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.rowElem {
+    display: inline-block;
+}
+
+.rowElem * {
+    display: inline-block;
+}
+
+input {
+    border-radius: 7px;
+    background-color: aliceblue;
+}
+
+#chapterNameTextInput, #storyIDTextInput {
+    width: 50ch;
+    margin-left: 10px;
+}
+
+#chapterNumNumberInput {
+    width: fit-content;
+    margin-left: 10px;
+}
+
+#edgesIncoming, #edgesOutgoing {
+    width: 67ch;
+    display: block;
+}
+
+
+button {
+    border-radius: 8px;
+    border: 1px solid #F8FAFC;
+    background: #CBD5E1;
+    color: black;
+    cursor: pointer;
+}
+
+button:hover{
+    background: #7C3AED;
+    border-color: #7C3AED;
+    color: #F8FAFC;
+}
+
+.Width50 {
+    width: 50%;
+}
+
+.flexCenter {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.justifyCenter {
+    display: flex !important;
+    justify-content: center !important;
+}
+
+.editorContainer {
+    border-radius: 15px;
+    background-color: aliceblue;
+    color: #0F172A;
+
+    width: 70%
+}
+
+input, label, button {
+    font-size: 16px;
+}

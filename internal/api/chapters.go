@@ -25,7 +25,7 @@ func CreateNewChapter(c *gin.Context, user *models.User) (string, fverrors.Error
 		StoryID:     story.StoryID,
 		Content:     c.PostForm("content"),
 		FileID:      rand.Text()[:15],
-		Username:    c.PostForm("username"),
+		Username:    user.Username,
 	}
 
 	timeNow := db.TimeNow()

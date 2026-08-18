@@ -56,6 +56,13 @@ func (s *Server) RegisterRoutes() http.Handler {
 	storyGroup := r.Group("/story")
 	{
 		storyGroup.GET("/new", s.newStoryPageHandler)
+		storyGroup.GET("/view/:story_id", s.viewStoryPageHandler)
+	}
+
+	chapterGroup := r.Group("/chapter")
+	{
+		chapterGroup.GET("/new", s.newChapterPageHandler)
+		storyGroup.GET("/view/:chapter_id", s.viewChapterPageHandler)
 	}
 
 	// api routes
@@ -708,13 +715,68 @@ func (s *Server) pagesHandler(c *gin.Context) {
 
 func (s *Server) newStoryPageHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
-	if err != nil {
-		c.Writer.WriteHeader(http.StatusInternalServerError)
-		return
-	} else if !auth.IsPrivateAuthenticated(user) {
-		c.Writer.WriteHeader(http.StatusUnauthorized)
+	if (err == nil) && (auth.IsPrivateAuthenticated(user)) {
+		servePage(c, "newstory", nil)
 		return
 	}
 
-	servePage(c, "newstory", nil)
+	if errors.Is(err, fverrors.NoLoginErr) || !auth.IsPrivateAuthenticated(user) {
+		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
+		return
+	}
+	fverrors.SendErrorResponse(c, err)
+}
+
+func (s *Server) viewStoryPageHandler(c *gin.Context) {
+	user, err := auth.GetUserFromSession(c)
+	if (err != nil) && !auth.IsPublicAuthenticated(user) {
+		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
+		return
+	} else if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	story, err := api.GetStoryByID(user, c)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	servePage(c, "viewstory", models.NewStoryInfoDat(story))
+	return
+}
+
+func (s *Server) newChapterPageHandler(c *gin.Context) {
+	user, err := auth.GetUserFromSession(c)
+	if (err == nil) && (auth.IsPrivateAuthenticated(user)) {
+		servePage(c, "newchapter", nil)
+		return
+	}
+
+	if errors.Is(err, fverrors.NoLoginErr) || !auth.IsPrivateAuthenticated(user) {
+		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
+		return
+	}
+	fverrors.SendErrorResponse(c, err)
+}
+
+func (s *Server) viewChapterPageHandler(c *gin.Context) {
+	user, err := auth.GetUserFromSession(c)
+	if (err != nil) && !auth.IsPublicAuthenticated(user) {
+		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
+		return
+	} else if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	chapter, err := api.GetChapterByID(user, c)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	servePage(c, "viewchapter", models.NewChapterInfoDat(chapter))
+	return
 }

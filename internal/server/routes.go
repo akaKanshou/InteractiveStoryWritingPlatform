@@ -31,9 +31,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 	}))
 
 	// public routes
-	r.GET("/", s.pagesHandler)
+	r.GET("/pages", s.pagesHandler)
+	r.GET("/", s.helloWorldHandler)
 	r.GET("/index", s.helloWorldHandler)
-	r.GET("/home", s.homeHandler)
 
 	// auth routes
 	authGroup := r.Group("/auth")
@@ -57,6 +57,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	{
 		storyGroup.GET("/new", s.newStoryPageHandler)
 		storyGroup.GET("/view/:story_id", s.viewStoryPageHandler)
+		storyGroup.GET("/edit/:story_id", s.editStoryPageHandler)
 	}
 
 	chapterGroup := r.Group("/chapter")
@@ -83,10 +84,11 @@ func (s *Server) RegisterRoutes() http.Handler {
 	{
 		privateApi.POST("/newstory", s.newStoryHandler)
 		privateApi.POST("/editstory", s.editStoryHandler)
+		privateApi.DELETE("/story/:story_id", s.deleteStoryHandler)
 
 		privateApi.POST("/newchapter", s.newChapterHandler)
 		privateApi.POST("/editchapter", s.editChapterHandler)
-		privateApi.DELETE("/deletechapter/:chapter_id", s.deleteChapterHandler)
+		privateApi.DELETE("/chapter/:chapter_id", s.deleteChapterHandler)
 
 		privateApi.POST("/addedge", s.addEdgeHandler)
 	}
@@ -95,9 +97,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 	staticAssets := r.Group("/")
 	{
 		staticAssets.StaticFile("/favicon.ico", "./favicon.ico")
-		staticAssets.Static("/css", "webpages/css")
-		staticAssets.Static("/images", "webpages/images")
-		staticAssets.Static("/scripts", "webpages/scripts")
+		staticAssets.Static("/css", "webpages2/css")
+		staticAssets.Static("/images", "webpages2/images")
+		staticAssets.Static("/scripts", "webpages2/scripts")
 	}
 
 	return r
@@ -210,13 +212,9 @@ func (s *Server) helloWorldHandler(c *gin.Context) {
 	if err != nil && !errors.Is(err, fverrors.NoLoginErr) {
 		fverrors.SendErrorResponse(c, err)
 		return
-	} else if errors.Is(err, fverrors.NoLoginErr) {
-		u = new(models.User{
-			Username: "stranger",
-		})
 	}
 
-	servePage(c, "index", u)
+	servePage2(c, "index", u)
 }
 
 /*
@@ -225,8 +223,6 @@ func (s *Server) helloWorldHandler(c *gin.Context) {
 Description: Login page endpoint
 */
 func (s *Server) loginHandler(c *gin.Context) {
-	var err fverrors.Error
-
 	user, err := auth.GetUserFromSession(c)
 	if err != nil && !errors.Is(err, fverrors.NoLoginErr) {
 		fverrors.SendErrorResponse(c, err)
@@ -243,7 +239,7 @@ func (s *Server) loginHandler(c *gin.Context) {
 		return
 	}
 
-	servePage(c, "login", user)
+	servePage2(c, "login", nil)
 }
 
 /*
@@ -266,7 +262,7 @@ func (s *Server) userCreateHandler(c *gin.Context) {
 		return
 	}
 
-	servePage(c, "createuser", user)
+	servePage2(c, "createuser", user)
 }
 
 /*
@@ -332,7 +328,7 @@ func (s *Server) userMyStoriesHandler(c *gin.Context) {
 		return
 	}
 
-	servePage(c, "mystories", models.NewMyStoriesData(user, stories))
+	servePage2(c, "MyStories", models.NewMyStoriesData(user, stories))
 }
 
 /*
@@ -684,25 +680,6 @@ func (s *Server) getEdgesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"edges": edges})
 }
 
-func (s *Server) homeHandler(c *gin.Context) {
-	user, err := auth.GetUserFromSession(c)
-	if err != nil && !errors.Is(err, fverrors.NoLoginErr) {
-		fverrors.SendErrorResponse(c, err)
-		return
-	} else if !auth.IsPublicAuthenticated(user) {
-		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
-		return
-	}
-
-	stories, err := api.GetHomePageStories()
-	if err != nil {
-		fverrors.SendErrorResponse(c, err)
-		return
-	}
-
-	servePage(c, "home", models.NewHomePageData(user, stories[0], stories[1], stories[2]))
-}
-
 func (s *Server) pagesHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if err != nil && !errors.Is(err, fverrors.NoLoginErr) {
@@ -719,7 +696,7 @@ func (s *Server) pagesHandler(c *gin.Context) {
 func (s *Server) newStoryPageHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if (err == nil) && (auth.IsPrivateAuthenticated(user)) {
-		servePage(c, "newstory", nil)
+		servePage2(c, "newstory", user)
 		return
 	}
 
@@ -746,14 +723,20 @@ func (s *Server) viewStoryPageHandler(c *gin.Context) {
 		return
 	}
 
-	servePage(c, "viewstory", models.NewStoryInfoDat(story))
+	chapters, err := api.GetChaptersByStory(user, c)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	servePage2(c, "viewstory", models.NewStoryPageDat(user, story, chapters))
 	return
 }
 
 func (s *Server) newChapterPageHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if (err == nil) && (auth.IsPrivateAuthenticated(user)) {
-		servePage(c, "newchapter", nil)
+		servePage2(c, "newChapter", user)
 		return
 	}
 
@@ -780,7 +763,13 @@ func (s *Server) viewChapterPageHandler(c *gin.Context) {
 		return
 	}
 
-	servePage(c, "viewchapter", models.NewChapterInfoDat(chapter))
+	edgeDetails, err := api.GetEdgeDetails(chapter)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	servePage2(c, "viewchapter", models.NewChapterInfoDat(user, chapter, edgeDetails))
 	return
 }
 
@@ -821,7 +810,7 @@ func (s *Server) editChapterPageHandler(c *gin.Context) {
 		return
 	}
 
-	servePage(c, "editchapter", models.NewChapterInfoDat(chapter))
+	servePage(c, "editchapter", models.NewChapterInfoDat(user, chapter, nil))
 }
 
 func (s *Server) deleteChapterHandler(c *gin.Context) {
@@ -841,4 +830,47 @@ func (s *Server) deleteChapterHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (s *Server) deleteStoryHandler(c *gin.Context) {
+	user, err := auth.GetUserFromSession(c)
+	if (err != nil) && (!auth.IsPrivateAuthenticated(user)) {
+		fverrors.SendErrorResponse(c, err)
+		return
+	} else if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	err = api.DeleteStory(user, c)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (s *Server) editStoryPageHandler(c *gin.Context) {
+	user, err := auth.GetUserFromSession(c)
+	if (err != nil) && (!auth.IsPrivateAuthenticated(user)) {
+		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
+		return
+	} else if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	story, err := api.GetStoryByID(user, c)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	if story.Username != user.Username {
+		fverrors.SendErrorResponse(c, fverrors.UnAuthorizedErr)
+		return
+	}
+
+	servePage2(c, "editstory", models.NewStoryPageDat(user, story, nil))
 }

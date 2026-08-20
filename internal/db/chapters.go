@@ -113,11 +113,11 @@ func UpdateChapter(chapter *models.Chapter, timeNow int64) fverrors.Error {
 	return nil
 }
 
+// GetChaptersByStory TODO: unused page param
 func GetChaptersByStory(storyID string, page int) ([]*models.Chapter, fverrors.Error) {
 	rows, err := dbConn.Query(context.Background(),
-		`SELECT chapter_name, chapter_id, index, last_updated FROM chapters WHERE story_id=$1 ORDER BY index LIMIT 50 OFFSET $2`,
-		storyID,
-		page)
+		`SELECT chapter_name, chapter_id, index, last_updated FROM chapters WHERE story_id=$1 ORDER BY index`,
+		storyID)
 
 	if err != nil {
 		return nil, fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred", err)
@@ -125,7 +125,7 @@ func GetChaptersByStory(storyID string, page int) ([]*models.Chapter, fverrors.E
 
 	defer rows.Close()
 
-	chapters := make([]*models.Chapter, 0, 50)
+	chapters := make([]*models.Chapter, 0, 256)
 	for rows.Next() {
 		chapter := &models.Chapter{
 			StoryID: storyID,
@@ -202,4 +202,39 @@ func DeleteChapter(chapter *models.Chapter) fverrors.Error {
 	}
 
 	return nil
+}
+
+func GetEdgeDetails(id string) ([]models.EdgeDetails, fverrors.Error) {
+	rows, err := dbConn.Query(context.Background(),
+		`SELECT T.chapter_name, T.chapter_id, T.index, T.last_updated
+				FROM edges E 
+				INNER JOIN chapters T ON E.to_chap=T.chapter_id
+				WHERE E.from_chap=$1 ORDER BY T.index`, id)
+
+	if err != nil {
+		return nil, fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred", err)
+	}
+
+	edgeDetails := make([]models.EdgeDetails, 0, 256)
+	for rows.Next() {
+		edgeDetail := models.EdgeDetails{
+			FromChapter: &models.Chapter{},
+			ToChapter:   &models.Chapter{},
+		}
+
+		err = rows.Scan(&edgeDetail.ToChapter.ChapterName,
+			&edgeDetail.ToChapter.ChapterID, &edgeDetail.ToChapter.Index, &edgeDetail.ToChapter.LastUpdated)
+
+		if err != nil {
+			return nil, fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred", err)
+		}
+
+		edgeDetails = append(edgeDetails, edgeDetail)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred", err)
+	}
+
+	return edgeDetails, nil
 }

@@ -18,7 +18,7 @@ func GetStoriesByUser(username string, visibilityVal models.StoryVisibility) ([]
 	fverrors.Error) {
 	rows, pgErr := dbConn.Query(context.Background(),
 		`SELECT story_id, story_name, 
-description, visibility FROM stories WHERE username=$1 AND visibility&$2>0`,
+description, visibility, last_updated FROM stories WHERE username=$1 AND visibility&$2>0`,
 		username, visibilityVal)
 
 	if pgErr != nil {
@@ -33,7 +33,8 @@ description, visibility FROM stories WHERE username=$1 AND visibility&$2>0`,
 			Username: username,
 		}
 
-		if err := rows.Scan(&story.StoryID, &story.StoryName, &story.Description, &story.Visibility); err != nil {
+		if err := rows.Scan(&story.StoryID, &story.StoryName, &story.Description, &story.Visibility,
+			&story.LastUpdated); err != nil {
 			return nil, fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred.", err)
 		}
 
@@ -155,4 +156,13 @@ func GetLatestStories(limit int) ([]models.Story, fverrors.Error) {
 	}
 
 	return stories, nil
+}
+
+func DeleteStory(id string) fverrors.Error {
+	_, err := dbConn.Exec(context.Background(), `DELETE FROM stories WHERE story_id=$1`, id)
+	if err != nil {
+		return fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred.", err)
+	}
+
+	return nil
 }

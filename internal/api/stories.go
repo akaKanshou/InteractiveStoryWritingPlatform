@@ -113,3 +113,17 @@ func GetHomePageStories() ([][]models.Story, fverrors.Error) {
 
 	return stories, nil
 }
+
+func DeleteStory(user *models.User, c *gin.Context) fverrors.Error {
+	storyId := c.Param("story_id")
+	story, err := db.GetStoryByID(storyId)
+	if err != nil {
+		return err
+	}
+
+	if story.Username != user.Username {
+		return fverrors.UnAuthorizedErr
+	}
+
+	return db.DeleteStory(storyId)
+}

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>Edit Chapter</title>
+
+        <link rel="stylesheet" href="index.css">
+        <link rel="stylesheet" href="editchapter.css">
+        <link rel="stylesheet"
+            href="https://localhost:8080/css/editchapter.css">
+
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    </head>
+
+    <body>
+
+        <div id="hamburger">
+            <div class="hamRows" id="hamburgerRow1"></div>
+            <div class="hamRows" id="hamburgerRow2"></div>
+            <div class="hamRows" id="hamburgerRow3"></div>
+        </div>
+
+        <nav>
+            <div id="logo_text">
+
+                <div id="logo">
+                    <img src="images/logo.png" alt="LOGO">
+                </div>
+
+                <div id="text">ForgeVerse</div>
+
+            </div>
+
+            <ul>
+                <li>
+                    <a href="#">
+                        <i class="fa-solid fa-house-chimney"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#">
+                        <i class="fa-solid fa-chart-column"></i>
+                        <span>Trending</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#">
+                        <i class="fa-solid fa-table-list"></i>
+                        <span>Categories</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#">
+                        <i class="fa-solid fa-pen-nib"></i>
+                        <span>My Stories</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div id="mainPage">
+
+            <div class="Search">
+                <div class="logoAndId">
+
+                    <div class="accountBox">
+
+                        <div class="logo">
+                            <img src="images/theBanner01.jpg" alt="Profile">
+                        </div>
+
+                        <span class="Id">Deepak</span>
+
+                        <span class="dropIcon">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </span>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <main class="editChapter">
+
+                <header class="pageHeader">
+                    <h1>Edit Chapter</h1>
+                    <p>Make changes to your chapter and save them.</p>
+                </header>
+
+                <div class="chapterDetails">
+
+                    <div class="rowElem">
+                        <label for="chapterNameTextInput">
+                            Chapter Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="chapterNameTextInput"
+                            placeholder="Chapter Name"
+                            value={{.ChapterInfo.ChapterName}}>
+                    </div>
+
+                    <div class="rowElem">
+                        <label for="storyIDTextInput">
+                            Story ID
+                        </label>
+
+                        <input
+                            type="text"
+                            id="storyIDTextInput"
+                            placeholder="Story ID"
+                            value={{.ChapterInfo.StoryID}}
+                            disabled>
+                    </div>
+
+                </div>
+
+                <div class="editorRow" id="editorJSRow">
+
+                    <div class="editorContainer">
+                        <div
+                            id="editorJS"
+                            data-id={{.ChapterInfo.ChapterID}}>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="rowElem fullWidth">
+
+                    <label for="edgesIncoming">
+                        Chapter IDs leading to this chapter
+                    </label>
+
+                    <input
+                        type="text"
+                        id="edgesIncoming"
+                        placeholder="XYZ,ABC">
+
+                </div>
+
+                <div class="rowElem fullWidth">
+
+                    <label for="edgesOutgoing">
+                        Chapter IDs this chapter leads to
+                    </label>
+
+                    <input
+                        type="text"
+                        id="edgesOutgoing"
+                        placeholder="XYZ,ABC">
+
+                </div>
+
+                <div class="chapterBottom">
+
+                    <div class="rowElem">
+                        <label for="chapterNumNumberInput">
+                            Chapter Number
+                        </label>
+
+                        <input
+                            type="number"
+                            id="chapterNumNumberInput"
+                            placeholder="Chapter Number"
+                            value={{.ChapterInfo.Index}}
+                            disabled>
+                    </div>
+
+                    <div class="chapterActions">
+
+                        <button id="delete" type="button">
+                            Delete
+                        </button>
+
+                        <button id="submit" type="button">
+                            Edit
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </main>
+
+        </div>
+
+        <script>
+        const hamBurger = document.getElementById("hamburger");
+        const nav = document.querySelector("nav");
+
+        const Ham1 = document.getElementById("hamburgerRow1");
+        const Ham2 = document.getElementById("hamburgerRow2");
+        const Ham3 = document.getElementById("hamburgerRow3");
+
+        let open = false;
+
+        hamBurger.addEventListener("click", () => {
+
+            if (!open) {
+                nav.style.left = "0";
+                nav.classList.add("open");
+
+                Ham1.style.transform =
+                    "translateY(8px) rotate(45deg)";
+
+                Ham2.style.opacity = "0";
+
+                Ham3.style.transform =
+                    "translateY(-8px) rotate(-45deg)";
+            } else {
+                nav.style.left = "-250px";
+                nav.classList.remove("open");
+
+                Ham1.style.transform = "rotate(0deg)";
+                Ham2.style.opacity = "1";
+                Ham3.style.transform = "rotate(0deg)";
+            }
+
+            open = !open;
+        });
+    </script>
+
+        <script
+            src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@latest"></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+
+        <script src="https://localhost:8080/scripts/editchapter.js"></script>
+
+    </body>
+
+</html>

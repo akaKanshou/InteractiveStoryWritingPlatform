@@ -1,0 +1,27 @@
+{{define "headerTempl"}}
+<div class="Search">
+    {{if .UserID}}
+    <div class="logoAndId userinfo" data-href="https://localhost:8080/user/mystories">
+        <div class="accountBox">
+            <div class="logo">
+                <img src="https://localhost:8080/images/Banner01.png" alt="Profile">
+            </div>
+
+            <div class="Id">{{.Username}}</div>
+        </div>
+    </div>
+
+    <div class="logoAndId logout" data-href="https://localhost:8080/auth/logout">
+        <div class="accountBox logout">
+            <div class="Id">Log Out</div>
+        </div>
+    </div>
+    {{else}}
+    <div class="logoAndId loginButton" data-href="https://localhost:8080/auth/login">
+        <div class="accountBox">
+            <div class="Id">Log In</div>
+        </div>
+    </div>
+    {{end}}
+</div>
+{{end}}

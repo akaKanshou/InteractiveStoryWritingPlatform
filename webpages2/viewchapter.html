@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{.ChapterInfo.Content}}</title>
+
+        <link rel="stylesheet" href="https://localhost:8080/css/index.css">
+        <link rel="stylesheet" href="https://localhost:8080/css/viewchapter.css">
+
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    </head>
+
+    <body data-chapterid={{.ChapterInfo.ChapterID}}>
+
+        <div id="hamburger">
+            <div class="hamRows" id="hamburgerRow1"></div>
+            <div class="hamRows" id="hamburgerRow2"></div>
+            <div class="hamRows" id="hamburgerRow3"></div>
+        </div>
+
+        <nav>
+            <div id="logo_text">
+                <div id="logo">
+                    <img src="https://localhost:8080/images/logo.svg" alt="LOGO">
+                </div>
+                <div id="text">ForgeVerse</div>
+            </div>
+
+            <ul>
+                <li>
+                    <a href="https://localhost:8080/">
+                        <i class="fa-solid fa-house-chimney"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="https://localhost:8080/user/mystories">
+                        <i class="fa-solid fa-pen-nib"></i>
+                        <span>My Stories</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div id="mainPage">
+
+            {{template "headerTempl" .User}}
+
+            <main class="main">
+
+                <div class="chapterHeader">
+                    <div>
+                        <p class="chapterNumber">
+                            Chapter {{.ChapterInfo.Index}}
+                        </p>
+
+                        <h1>{{.ChapterInfo.ChapterName}}</h1>
+                    </div>
+
+                    <div class="chapterInfo">
+                        <span>{{.LastUpdatedDate}}</span>
+                        <span
+                                class="author1"><a href="https://localhost:8080/user/stories">@{{.User.Username}}</a></span>
+                    </div>
+                </div>
+
+                <div class="row justifyCenter">
+                    <div class="editorContainer">
+                        <div id="editorJS"
+                            data-id={{.ChapterInfo.ChapterID}}></div>
+                    </div>
+                </div>
+
+                <div class="chapterConnections">
+                    <div class="row" id="outgoingEdges">
+                        <h3>Next Chapters: </h3>
+                        <ul class="indexList">
+                            {{range .EdgeDetails}}
+                            {{template "chapterListTempl" .}}
+                            {{end}}
+                        </ul>
+                    </div>
+
+<!--                    <div class="row" id="incomingEdges">-->
+<!--                        <h3>Previous Chapters: </h3>-->
+<!--                        <ul class="indexList">-->
+<!--                            {{range .EdgeDetails}}-->
+<!--                            {{template "chapterListTempl" .}}-->
+<!--                            {{end}}-->
+<!--                        </ul>-->
+<!--                    </div>-->
+
+<!--                    <div class="row" id="outgoingForks">-->
+<!--                    </div>-->
+
+<!--                    <div class="row" id="incomingForks">-->
+<!--                    </div>-->
+
+                </div>
+
+            </main>
+
+        </div>
+
+        <script
+            src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@latest"></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+
+        <script src="https://localhost:8080/scripts/viewchapter.js"></script>
+
+    </body>
+
+</html>

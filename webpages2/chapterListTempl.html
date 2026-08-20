@@ -1,0 +1,13 @@
+{{define "chapterListTempl"}}
+<li>
+    Chapter {{.Index}}
+    <ul class="chapterSubList">
+        {{range .Chapters}}
+        <li class="chapterRow" data-chapterid={{.ChapterInfo.ChapterID}}>
+            <div class="chapterNameBox">{{.ChapterInfo.ChapterName}}</div>
+            <div class="chapterLastUpdated">{{.LastUpdatedDate}}</div>
+        </li>
+        {{end}}
+    </ul>
+</li>
+{{end}}

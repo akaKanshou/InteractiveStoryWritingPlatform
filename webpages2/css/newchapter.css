@@ -1,0 +1,151 @@
+.main {
+    width: min(900px, calc(100% - 60px));
+    margin: 30px auto 50px;
+}
+
+.logoAndId {
+    top: 10px;
+    right: 10px;
+}
+
+.pageHeader {
+    margin-bottom: 35px;
+}
+
+.pageHeader h1 {
+    margin: 0 0 8px;
+    color: #fff;
+    font-size: 30px;
+    font-weight: 700;
+}
+
+.pageHeader p {
+    margin: 0;
+    color: #8f96ab;
+    font-size: 14px;
+}
+
+.chapterDetails {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.rowElem {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 22px;
+}
+
+.rowElem label {
+    color: #dbe3ff;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.rowElem input {
+    width: 100%;
+    height: 42px;
+    padding: 0 13px;
+    box-sizing: border-box;
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: 7px;
+    background: rgb(43, 44, 45);
+    color: #e8e8f0;
+    font-family: inherit;
+    outline: none;
+}
+
+.rowElem input::placeholder {
+    color: #8f96ab;
+}
+
+.rowElem input:focus {
+    border-color: rgba(124, 92, 255, .45);
+}
+
+.editorRow {
+    margin-bottom: 25px;
+}
+
+.editorContainer {
+    min-height: 400px;
+    padding: 20px 25px;
+    box-sizing: border-box;
+    background: rgb(18, 22, 34);
+    border-radius: 8px;
+}
+
+#editorJS {
+    color: #e8e8f0;
+}
+
+.fullWidth {
+    width: 100%;
+}
+
+.chapterBottom {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 25px;
+    margin-top: 5px;
+}
+
+.chapterBottom .rowElem {
+    width: 50%;
+    margin-bottom: 0;
+}
+
+#submit {
+    width: 110px;
+    height: 40px;
+    border: none;
+    border-radius: 7px;
+    background: #5b5bd6;
+    color: #fff;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+#submit:hover {
+    background: #4e4ebf;
+}
+
+@media (max-width: 700px) {
+
+    .main {
+        width: calc(100% - 40px);
+        margin-top: 25px;
+    }
+
+    .chapterDetails {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .editorContainer {
+        padding: 15px;
+    }
+
+    .chapterBottom {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .chapterBottom .rowElem {
+        width: 100%;
+    }
+
+    #submit {
+        width: 100%;
+    }
+}
+
+.ce-toolbar__actions * {
+    color: #8f96ab !important;
+}

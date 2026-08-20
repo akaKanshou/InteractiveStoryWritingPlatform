@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>Welcome to ForgeVerse</title>
+
+        <link rel="stylesheet" href="https://localhost:8080/css/index.css">
+        <link rel="stylesheet" href="https://localhost:8080/css/auth.css">
+    </head>
+
+    <body>
+
+        <div class="toast-container" id="toastContainer"></div>
+
+        <div class="authPage">
+
+            <main class="authContent">
+
+                <div class="brand">
+
+                    <div class="logoIcon">
+                        <svg width="42" height="42" viewBox="0 0 48 48"
+                            fill="none">
+
+                            <path
+                                d="M24 4L6 14v20l18 10 18-10V14L24 4z"
+                                stroke="#8b7cff"
+                                stroke-width="2"
+                                fill="none" />
+
+                            <path
+                                d="M16 20h16M16 24h12M16 28h8"
+                                stroke="#a7a0ff"
+                                stroke-width="2"
+                                stroke-linecap="round" />
+
+                        </svg>
+                    </div>
+
+                    <h1>ForgeVerse</h1>
+
+                </div>
+
+                <p class="heroTagline">
+                    Where Imagination Becomes Reality
+                </p>
+
+                <p class="heroDescription">
+                    Create, explore, and experience stories like never before.
+                </p>
+
+                <div class="authCard">
+
+                    <div class="authWelcome">
+
+                        <h2 id="welcomeTitle">
+                            Hello, {{printf .Name}}!
+                        </h2>
+
+                        <p id="welcomeSubtitle">
+                            Choose a unique username for your account
+                        </p>
+
+                    </div>
+
+                    <form id="registerForm" novalidate>
+
+                        <div class="inputGroup">
+
+                            <label for="regUsername">
+                                Username
+                            </label>
+
+                            <input
+                                type="text"
+                                id="regUsername"
+                                placeholder="Choose a username"
+                                autocomplete="username"
+                                style="text-transform: lowercase">
+
+                            <ul
+                                class="inputError"
+                                id="usernameErrors">
+                            </ul>
+
+                        </div>
+
+                        <button
+                            type="button"
+                            class="registerSubmit"
+                            id="registerSubmit">
+
+                            <span class="btnText">
+                                Create Account
+                            </span>
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </main>
+
+        </div>
+
+        <script src="https://localhost:8080/scripts/createuser.js"></script>
+
+    </body>
+
+</html>

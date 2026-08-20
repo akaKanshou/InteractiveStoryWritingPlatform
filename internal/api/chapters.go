@@ -283,3 +283,7 @@ func DeleteChapter(user *models.User, c *gin.Context) fverrors.Error {
 
 	return nil
 }
+
+func GetEdgeDetails(chapter *models.Chapter) ([]models.EdgeDetails, fverrors.Error) {
+	return db.GetEdgeDetails(chapter.ChapterID)
+}

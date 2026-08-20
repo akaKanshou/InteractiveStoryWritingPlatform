@@ -46,3 +46,8 @@ type Edge struct {
 	ToChapter   string `json:"to_chapter" db:"to_chapter"`
 	Fork        bool   `json:"fork" db:"fork"`
 }
+
+type EdgeDetails struct {
+	FromChapter *Chapter
+	ToChapter   *Chapter
+}

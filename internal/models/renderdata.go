@@ -68,13 +68,15 @@ func NewStoryInfoDat(story *Story) *StoryInfoDat {
 type ChapterInfoDat struct {
 	User            *User
 	ChapterInfo     Chapter
+	EdgeDetails     []EdgeDetails
 	LastUpdatedDate string
 }
 
-func NewChapterInfoDat(user *User, chapter *Chapter) *ChapterInfoDat {
+func NewChapterInfoDat(user *User, chapter *Chapter, edgeDetails []EdgeDetails) *ChapterInfoDat {
 	return &ChapterInfoDat{
 		User:            user,
 		ChapterInfo:     *chapter,
+		EdgeDetails:     edgeDetails,
 		LastUpdatedDate: getTimeString(chapter.LastUpdated),
 	}
 }
@@ -92,10 +94,10 @@ func NewStoryPageDat(user *User, story *Story, chapterList []*Chapter) *StoryPag
 		if (lenList == 0) || (chapList[lenList-1].Index != chapter.Index) {
 			chapList = append(chapList, ChapterList{
 				Index:    chapter.Index,
-				Chapters: []*ChapterInfoDat{NewChapterInfoDat(nil, chapter)},
+				Chapters: []*ChapterInfoDat{NewChapterInfoDat(nil, chapter, nil)},
 			})
 		} else {
-			chapList[lenList-1].Chapters = append(chapList[lenList-1].Chapters, NewChapterInfoDat(nil, chapter))
+			chapList[lenList-1].Chapters = append(chapList[lenList-1].Chapters, NewChapterInfoDat(nil, chapter, nil))
 		}
 	}
 

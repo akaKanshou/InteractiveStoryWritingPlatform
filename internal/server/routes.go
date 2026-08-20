@@ -736,7 +736,7 @@ func (s *Server) viewStoryPageHandler(c *gin.Context) {
 func (s *Server) newChapterPageHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if (err == nil) && (auth.IsPrivateAuthenticated(user)) {
-		servePage(c, "newchapter", nil)
+		servePage(c, "newChapter", user)
 		return
 	}
 
@@ -763,7 +763,13 @@ func (s *Server) viewChapterPageHandler(c *gin.Context) {
 		return
 	}
 
-	servePage2(c, "viewchapter", models.NewChapterInfoDat(user, chapter))
+	edgeDetails, err := api.GetEdgeDetails(chapter)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	servePage2(c, "viewchapter", models.NewChapterInfoDat(user, chapter, edgeDetails))
 	return
 }
 
@@ -804,7 +810,7 @@ func (s *Server) editChapterPageHandler(c *gin.Context) {
 		return
 	}
 
-	servePage(c, "editchapter", models.NewChapterInfoDat(user, chapter))
+	servePage(c, "editchapter", models.NewChapterInfoDat(user, chapter, nil))
 }
 
 func (s *Server) deleteChapterHandler(c *gin.Context) {

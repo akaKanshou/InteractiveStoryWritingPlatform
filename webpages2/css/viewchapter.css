@@ -3,7 +3,6 @@
     margin: 25px auto 50px;
 }
 .logoAndId {
-    position: absolute;
     top: 10px;
     right: 10px;
 }
@@ -95,4 +94,8 @@
     .editorContainer {
         padding: 18px;
     }
+}
+
+#editorJS *::selection {
+
 }

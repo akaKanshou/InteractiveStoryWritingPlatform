@@ -57,6 +57,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	{
 		storyGroup.GET("/new", s.newStoryPageHandler)
 		storyGroup.GET("/view/:story_id", s.viewStoryPageHandler)
+		storyGroup.GET("/edit/:story_id", s.editStoryPageHandler)
 	}
 
 	chapterGroup := r.Group("/chapter")
@@ -762,7 +763,7 @@ func (s *Server) viewChapterPageHandler(c *gin.Context) {
 		return
 	}
 
-	servePage(c, "viewchapter", models.NewChapterInfoDat(user, chapter))
+	servePage2(c, "viewchapter", models.NewChapterInfoDat(user, chapter))
 	return
 }
 
@@ -842,4 +843,28 @@ func (s *Server) deleteStoryHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (s *Server) editStoryPageHandler(c *gin.Context) {
+	user, err := auth.GetUserFromSession(c)
+	if (err != nil) && (!auth.IsPrivateAuthenticated(user)) {
+		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
+		return
+	} else if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	story, err := api.GetStoryByID(user, c)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	if story.Username != user.Username {
+		fverrors.SendErrorResponse(c, fverrors.UnAuthorizedErr)
+		return
+	}
+
+	servePage2(c, "editstory", models.NewStoryPageDat(user, story, nil))
 }

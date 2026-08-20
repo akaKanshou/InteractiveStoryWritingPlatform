@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Edit Story</title>
+
+        <link rel="stylesheet" href="https://localhost:8080/css/index.css">
+        <link rel="stylesheet" href="https://localhost:8080/css/newstory.css">
+
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    </head>
+
+    <body data-storyid={{.Story.StoryInfo.StoryID}}>
+
+        <div id="hamburger">
+            <div class="hamRows" id="hamburgerRow1"></div>
+            <div class="hamRows" id="hamburgerRow2"></div>
+            <div class="hamRows" id="hamburgerRow3"></div>
+        </div>
+
+        <nav>
+            <div id="logo_text">
+                <div id="logo">
+                    <img src="https://localhost:8080/images/logo.svg" alt="LOGO">
+                </div>
+
+                <div id="text">ForgeVerse</div>
+            </div>
+
+            <ul>
+                <li>
+                    <a href="https://localhost:8080/">
+                        <i class="fa-solid fa-house-chimney"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="https://localhost:8080/user/mystories">
+                        <i class="fa-solid fa-pen-nib"></i>
+                        <span>My Stories</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div id="mainPage">
+            {{template "headerTempl" .User}}
+
+            <header id="top">
+                <h1 id="head">EDIT STORY</h1>
+                <p id="head2">"Turn your ideas into a story"</p>
+            </header>
+
+            <main class="bodyy">
+
+                <div class="mid">
+                    <label id="storytitle" for="titlewrite">
+                        Story Title
+                    </label>
+
+                    <textarea
+                        id="titlewrite"
+                        rows="2"
+                        placeholder="Enter title">{{.Story.StoryInfo.StoryName}}</textarea>
+                </div>
+
+                <div class="mid2">
+                    <label id="discrip" for="discrip2">
+                        Description
+                    </label>
+
+                    <textarea
+                        id="discrip2"
+                        rows="6"
+                        placeholder="Enter description">{{.Story.StoryInfo.Description}}</textarea>
+                </div>
+
+                <div class="visi" data-visibility={{.Story.StoryInfo.Visibility}}>
+                    <div id="visi2">Visibility</div>
+
+                    <div class="buttons">
+                        <button type="button" id="public">
+                            Public
+                        </button>
+
+                        <button type="button" id="private">
+                            Private
+                        </button>
+                    </div>
+                </div>
+
+            </main>
+
+            <footer class="foot">
+                <button type="button" id="edit">
+                    Edit
+                </button>
+            </footer>
+
+        </div>
+
+        <script src="https://localhost:8080/scripts/newstory.js"></script>
+
+    </body>
+
+</html>

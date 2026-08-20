@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>{{.Story.StoryInfo.StoryName}}</title>
+
+		<link rel="stylesheet" href="https://localhost:8080/css/index.css">
+		<link rel="stylesheet" href="https://localhost:8080/css/view.css">
+
+		<link rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+	</head>
+
+	<body data-storyid={{.Story.StoryInfo.StoryID}}>
+
+		<div id="hamburger">
+			<div class="hamRows" id="hamburgerRow1"></div>
+			<div class="hamRows" id="hamburgerRow2"></div>
+			<div class="hamRows" id="hamburgerRow3"></div>
+		</div>
+
+		<nav>
+			<div id="logo_text">
+				<div id="logo">
+					<img src="https://localhost:8080/images/logo.svg" alt="LOGO">
+				</div>
+				<div id="text">ForgeVerse</div>
+			</div>
+
+			<ul>
+				<ul>
+					<li><a href="https://localhost:8080/"><i
+							class="fa-solid fa-house-chimney"></i><span>Home</span></a></li>
+					<li><a href="https://localhost:8080/user/mystories"><i
+							class="fa-solid fa-pen-nib"></i><span>My
+                                Stories</span></a></li>
+				</ul>
+			</ul>
+		</nav>
+
+		<div id="mainPage">
+
+			{{template "headerTempl" .User}}
+
+			<div id="top">
+				<h1 id="head">{{.Story.StoryInfo.StoryName}}</h1>
+				{{if eq .Story.StoryInfo.Username .User.Username}}
+				<div class="foot">
+					<button id="edit">Edit</button>
+					<button id="delete">Delete</button>
+				</div>
+				{{end}}
+			</div>
+
+			<div class="bodyy">
+
+				<div class="upper">
+
+					<div class="mid">
+						<span class="visibility">Visibility: {{if eq .Story.StoryInfo.Visibility
+							1}}Private{{else}}Public{{end}}</span>
+						<span class="lastUpdated">Last Updated: {{.Story.LastUpdatedDate}}</span>
+						<span class="author">
+							<a href="https://localhost:8080/user/stories">@{{.Story.StoryInfo.Username}}</a>
+						</span>
+					</div>
+
+					<div class="mid3">
+						<h2 id="discrip">Description</h2>
+						<p id="head2">
+							{{.Story.StoryInfo.Description}}
+						</p>
+					</div>
+				</div>
+<!--				<div class="mid2">-->
+<!--					<p>Chapters: {{.Story.StoryInfo.Chapters}}</p>-->
+<!--					-->
+<!--				</div>-->
+				<div class="chapters">
+					<h3>Chapters: </h3>
+					<ul class="indexList">
+						{{range .ChapList}}
+						{{template "chapterListTempl" .}}
+						{{end}}
+					</ul>
+				</div>
+			</div>
+		</div>
+	<script src="https://localhost:8080/scripts/viewstory.js"></script>
+
+	</body>
+</html>

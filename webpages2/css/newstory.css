@@ -1,0 +1,158 @@
+#top {
+    width: min(850px, calc(100% - 60px));
+    margin: 35px auto 40px;
+}
+
+#head {
+    margin: 0 0 8px;
+    font-size: 30px;
+    font-weight: 700;
+    color: #fff;
+}
+
+#head2 {
+    margin: 0;
+    font-size: 15px;
+    color: #aeb7d0;
+}
+
+.bodyy {
+    width: min(850px, calc(100% - 80px));
+    margin: auto;
+}
+
+.mid,
+.mid2 {
+    margin-bottom: 28px;
+}
+
+#storytitle,
+#discrip,
+#visi2 {
+    display: block;
+    margin-bottom: 9px;
+    color: #f3f4f8;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+#titlewrite,
+#discrip2 {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 13px 14px;
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: 8px;
+    background: rgb(43, 44, 45);
+    color: #e8e8f0;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    outline: none;
+    resize: none;
+}
+
+#titlewrite {
+    min-height: 55px;
+}
+
+#discrip2 {
+    min-height: 150px;
+}
+
+#titlewrite:focus,
+#discrip2:focus {
+    border-color: rgba(124, 92, 255, .45);
+}
+
+#titlewrite::placeholder,
+#discrip2::placeholder {
+    color: #8f96ab;
+}
+
+.visi {
+    margin-top: 5px;
+}
+
+.buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.buttons button {
+    min-width: 100px;
+    height: 38px;
+    padding: 0 18px;
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: 7px;
+    background: rgb(18, 22, 34);
+    color: #b9bfd1;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.buttons button:hover {
+    background: rgb(28, 32, 46);
+    color: #fff;
+}
+
+.buttons button.active {
+    background: #5b5bd6;
+    border-color: #5b5bd6;
+    color: #fff;
+}
+
+.foot {
+    width: min(850px, calc(100% - 80px));
+    margin: 30px auto 45px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+#create {
+    min-width: 100px;
+    height: 40px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 7px;
+    background: #5b5bd6;
+    color: #fff;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+#create:hover {
+    background: #4e4ebf;
+}
+
+@media (max-width: 700px) {
+
+    #top {
+        width: calc(100% - 40px);
+        margin-top: 25px;
+    }
+
+    .bodyy,
+    .foot {
+        width: calc(100% - 50px);
+    }
+
+    #head {
+        font-size: 26px;
+    }
+
+    .buttons {
+        width: 100%;
+    }
+
+    .buttons button {
+        flex: 1;
+    }
+}
+
+.Search > * {
+    margin-left: 0;
+    margin-right: 20px;
+}

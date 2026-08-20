@@ -1,0 +1,38 @@
+{{define "storyCardDetailed"}}
+    <div class="slide story"
+         data-type={{if eq .StoryInfo.Visibility 1}}private{{else}}public{{end}}
+         data-storyid={{.StoryInfo.StoryID}}>
+
+        <div class="slide-content">
+            <div class="story-meta">
+                {{if eq .StoryInfo.Visibility 1}}
+                <span class="visibility private">
+                        <i class="fa-solid fa-lock"></i>
+                        Private
+                    </span>
+                {{else}}
+                    <span class="visibility public">
+                        <i class="fa-solid fa-globe"></i>
+                        Public
+                    </span>
+                {{end}}
+            </div>
+
+            <h3 class="titleOfSlide">
+                {{.StoryInfo.StoryName}}
+            </h3>
+
+            <p class="DesOfSlide">
+                {{.StoryInfo.Description}}
+            </p>
+
+            <div class="slide-footer">
+                                    <span class="upload-time">
+                                        {{.LastUpdatedDate}}
+                                    </span>
+            </div>
+
+        </div>
+
+    </div>
+{{end}}

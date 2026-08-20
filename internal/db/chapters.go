@@ -113,11 +113,11 @@ func UpdateChapter(chapter *models.Chapter, timeNow int64) fverrors.Error {
 	return nil
 }
 
+// GetChaptersByStory TODO: unused page param
 func GetChaptersByStory(storyID string, page int) ([]*models.Chapter, fverrors.Error) {
 	rows, err := dbConn.Query(context.Background(),
-		`SELECT chapter_name, chapter_id, index, last_updated FROM chapters WHERE story_id=$1 ORDER BY index LIMIT 50 OFFSET $2`,
-		storyID,
-		page)
+		`SELECT chapter_name, chapter_id, index, last_updated FROM chapters WHERE story_id=$1 ORDER BY index`,
+		storyID)
 
 	if err != nil {
 		return nil, fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred", err)
@@ -125,7 +125,7 @@ func GetChaptersByStory(storyID string, page int) ([]*models.Chapter, fverrors.E
 
 	defer rows.Close()
 
-	chapters := make([]*models.Chapter, 0, 50)
+	chapters := make([]*models.Chapter, 0, 256)
 	for rows.Next() {
 		chapter := &models.Chapter{
 			StoryID: storyID,

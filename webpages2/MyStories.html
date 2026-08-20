@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>My Stories</title>
+
+        <link rel="stylesheet" href="https://localhost:8080/css/index.css">
+        <link rel="stylesheet" href="https://localhost:8080/css/MyStories.css">
+
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    </head>
+
+    <body>
+
+        <div id="hamburger">
+            <div class="hamRows" id="hamburgerRow1"></div>
+            <div class="hamRows" id="hamburgerRow2"></div>
+            <div class="hamRows" id="hamburgerRow3"></div>
+        </div>
+
+        <nav>
+            <div id="logo_text">
+                <div id="logo">
+                    <img src="https://localhost:8080/images/logo.svg" alt="LOGO">
+                </div>
+
+                <div id="text">ForgeVerse</div>
+            </div>
+
+            <ul>
+                <li>
+                    <a href="#">
+                        <i class="fa-solid fa-house-chimney"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#"><i class="fa-solid fa-pen-nib"></i><span>My
+                                Stories</span></a>
+                </li>            </ul>
+        </nav>
+
+        <div id="mainPage">
+
+            <div class="Search">
+                <input
+                        type="text"
+                        id="searchBar"
+                        placeholder="Search stories...">
+
+                <div class="logoAndId" data-href="#">
+                    <div class="accountBox">
+
+                        <div class="logo">
+                            <img src="https://localhost:8080/images/theBanner01.jpg" alt="Profile">
+                        </div>
+
+                        <div class="Id">{{.User.Username}}</div>
+                    </div>
+                </div>
+
+                <div class="logoAndId logout" data-href="https://localhost:8080/auth/logout">
+                    <div class="accountBox logout">
+                        <div class="Id">Log Out</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="rest">
+
+            <div class="homeCategories">
+
+                <div class="title">
+
+                    <div class="page-heading">
+                        <h1>My Stories</h1>
+                        <p>Manage and continue your stories</p>
+                    </div>
+
+                    <div class="head head1">
+
+                        <button class="Hb Hb1 active" data-filter="all">
+                            All Stories
+                        </button>
+
+                        <button class="Hb Hb2" data-filter="private">
+                            Private
+                        </button>
+
+                        <button class="Hb Hb3" data-filter="public">
+                            Public
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="story-toolbar">
+
+                    <div class="story-count">
+                        <span id="storyCount">{{len .Stories}} stories</span>
+                    </div>
+
+                    <div class="head head2">
+
+                        <div class="H2e H2e2">
+
+                            <button class="b b1" title="Grid view">
+                                <i class="fa-solid fa-table-cells-large"></i>
+                            </button>
+
+                            <button class="b b2" title="List view">
+                                <i class="fa-solid fa-list"></i>
+                            </button>
+
+                        </div>
+
+                        <div class="H2e H2e3">
+                            <button class="Create" id="createButton">
+                                <i class="fa-solid fa-plus"></i>
+                                Create
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="slider">
+                    <div class="slides" id="storyList">
+                        {{range .Stories}}
+                            {{template "storyCardDetailed" .}}
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <script src="https://localhost:8080/scripts/mystories.js"></script>
+    </body>
+</html>

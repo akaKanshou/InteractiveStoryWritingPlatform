@@ -24,7 +24,7 @@
         <nav>
             <div id="logo_text">
                 <div id="logo">
-                    <img src="images/logo.png" alt="LOGO">
+                    <img src="https://localhost:8080/images/logo.svg" alt="LOGO">
                 </div>
                 <div id="text">ForgeVerse</div>
             </div>
@@ -63,7 +63,8 @@
 
                     <div class="chapterInfo">
                         <span>{{.LastUpdatedDate}}</span>
-                        <span>@{{.ChapterInfo.Username}}</span>
+                        <span
+                                class="author1"><a href="https://localhost:8080/user/stories">@{{.User.Username}}</a></span>
                     </div>
                 </div>
 
@@ -78,20 +79,20 @@
                     <div class="row" id="outgoingEdges">
                         <h3>Next Chapters: </h3>
                         <ul class="indexList">
-                            {{range .ChapList}}
+                            {{range .EdgeDetails}}
                             {{template "chapterListTempl" .}}
                             {{end}}
                         </ul>
                     </div>
 
-                    <div class="row" id="incomingEdges">
-                        <h3>Previous Chapters: </h3>
-                        <ul class="indexList">
-                            {{range .EdgeDetails}}
-                            {{template "edgeListTempl" .}}
-                            {{end}}
-                        </ul>
-                    </div>
+<!--                    <div class="row" id="incomingEdges">-->
+<!--                        <h3>Previous Chapters: </h3>-->
+<!--                        <ul class="indexList">-->
+<!--                            {{range .EdgeDetails}}-->
+<!--                            {{template "chapterListTempl" .}}-->
+<!--                            {{end}}-->
+<!--                        </ul>-->
+<!--                    </div>-->
 
 <!--                    <div class="row" id="outgoingForks">-->
 <!--                    </div>-->

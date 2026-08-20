@@ -58,8 +58,6 @@ deleteBtn.addEventListener("click", async () => {
     }
 })
 
-
-
 document.querySelectorAll(".chapterRow").forEach((element, index) => {
     element.addEventListener("click", () => {
         window.location = `https://localhost:8080/chapter/view/${element.dataset.chapterid}`

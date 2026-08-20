@@ -4,7 +4,6 @@
 }
 
 .logoAndId {
-    position: absolute;
     top: 10px;
     right: 10px;
 }
@@ -145,4 +144,8 @@
     #submit {
         width: 100%;
     }
+}
+
+.ce-toolbar__actions * {
+    color: #8f96ab !important;
 }

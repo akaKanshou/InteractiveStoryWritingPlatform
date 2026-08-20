@@ -125,3 +125,16 @@ hamBurger.addEventListener("click", () => {
 
     open = !open;
 });
+
+document.querySelectorAll(".logoAndId").forEach((element, index) => {
+    element.addEventListener("click", () => {
+        window.location = element.dataset.href;
+    })
+})
+
+document.addEventListener("DOMContentLoaded", () => {
+    const searchParams = new URLSearchParams(window.location.href);
+    if (searchParams.has("chapter")) {
+        
+    }
+})

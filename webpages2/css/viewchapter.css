@@ -96,6 +96,44 @@
     }
 }
 
-#editorJS *::selection {
 
+.chapters * {
+    color: #e8e8f0;
+}
+
+.chapterRow {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.chapterRow > * {
+    padding: 10px
+}
+
+.chapterRow:hover {
+    background-color: rgba(124, 92, 255, .45);
+    border-radius: 5px;
+    cursor:pointer
+}
+
+.chapterLastUpdated {
+    color: #8f96ab;
+    font-size: 14px;
+    align-self: end;
+}
+
+.chapterSubList {
+    padding-left: 20px;
+}
+
+a, a:visited, a:active, a:focus, a:link {
+    color: inherit;
+    outline: transparent;
+    text-decoration: none;
+}
+
+nav li {
+    color: #dbe3ff !important;
 }

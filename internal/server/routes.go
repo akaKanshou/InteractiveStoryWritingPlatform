@@ -736,7 +736,7 @@ func (s *Server) viewStoryPageHandler(c *gin.Context) {
 func (s *Server) newChapterPageHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if (err == nil) && (auth.IsPrivateAuthenticated(user)) {
-		servePage(c, "newChapter", user)
+		servePage2(c, "newChapter", user)
 		return
 	}
 

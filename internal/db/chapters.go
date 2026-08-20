@@ -206,10 +206,10 @@ func DeleteChapter(chapter *models.Chapter) fverrors.Error {
 
 func GetEdgeDetails(id string) ([]models.EdgeDetails, fverrors.Error) {
 	rows, err := dbConn.Query(context.Background(),
-		`SELECT F.chapter_name, F.chapter_id, F.index, F.last_updated, T.chapter_name, T.chapter_id, T.index, T.last_updated
-				FROM chapters F 
-				INNER JOIN chapters T ON F.chapter_id=T.chapter_id
-				WHERE (F.chapter_id=$1) OR (T.chapter_id=$1)`, id)
+		`SELECT T.chapter_name, T.chapter_id, T.index, T.last_updated
+				FROM edges E 
+				INNER JOIN chapters T ON E.to_chap=T.chapter_id
+				WHERE E.from_chap=$1 ORDER BY T.index`, id)
 
 	if err != nil {
 		return nil, fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred", err)
@@ -222,8 +222,7 @@ func GetEdgeDetails(id string) ([]models.EdgeDetails, fverrors.Error) {
 			ToChapter:   &models.Chapter{},
 		}
 
-		err = rows.Scan(&edgeDetail.FromChapter.ChapterName, &edgeDetail.FromChapter.ChapterID,
-			&edgeDetail.FromChapter.Index, &edgeDetail.FromChapter.LastUpdated, &edgeDetail.ToChapter.ChapterName,
+		err = rows.Scan(&edgeDetail.ToChapter.ChapterName,
 			&edgeDetail.ToChapter.ChapterID, &edgeDetail.ToChapter.Index, &edgeDetail.ToChapter.LastUpdated)
 
 		if err != nil {

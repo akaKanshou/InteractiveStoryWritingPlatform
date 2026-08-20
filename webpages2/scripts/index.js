@@ -40,6 +40,12 @@ document.querySelectorAll(".logoAndId").forEach((element, index) => {
 
 document.querySelectorAll(".slide").forEach((element, index) => {
     element.addEventListener("click", () => {
+        window.location = element.dataset.href;
+    })
+})
+
+document.querySelectorAll(".slide").forEach((element, index) => {
+    element.addEventListener("click", () => {
         window.location = `https://localhost:8080/story/view/${element.dataset.storyid}` ;
     })
 })

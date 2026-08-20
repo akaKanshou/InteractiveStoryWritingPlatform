@@ -41,12 +41,14 @@ document.querySelectorAll(".logoAndId").forEach((element, index) => {
 
 const editBtn = document.getElementById("edit");
 const deleteBtn = document.getElementById("delete");
+if (editBtn){
+    editBtn.addEventListener("click", () => {
+        const id = document.querySelector("body").dataset.storyid;
+        window.location = `https://localhost:8080/story/edit/${id}`;
+    })
+}
 
-editBtn.addEventListener("click", () => {
-    const id = document.querySelector("body").dataset.storyid;
-    window.location = `https://localhost:8080/story/edit/${id}`;
-})
-
+if (deleteBtn) {
 deleteBtn.addEventListener("click", async () => {
     const id = document.querySelector("body").dataset.storyid;
     const res = await fetch(`https://localhost:8080/api/story/${id}`, {method: "DELETE"})
@@ -57,6 +59,7 @@ deleteBtn.addEventListener("click", async () => {
         console.log(resJson)
     }
 })
+}
 
 document.querySelectorAll(".chapterRow").forEach((element, index) => {
     element.addEventListener("click", () => {

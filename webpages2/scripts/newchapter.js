@@ -133,8 +133,12 @@ document.querySelectorAll(".logoAndId").forEach((element, index) => {
 })
 
 document.addEventListener("DOMContentLoaded", () => {
-    const searchParams = new URLSearchParams(window.location.href);
-    if (searchParams.has("chapter")) {
-        
+    const searchParams = new URLSearchParams(window.location.search);
+    const storyIDField = document.getElementById("storyIDTextInput");
+    if (searchParams.has("story")) {
+          storyIDField.value = searchParams.get("story");
+    } else {
+        storyIDField.value = "";
+        storyIDField.disabled = false;
     }
 })

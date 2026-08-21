@@ -60,13 +60,19 @@
 #outgoingEdges,
 #incomingEdges,
 #outgoingForks,
-#incomingForks {
+#incomingForks,
+#backToChap {
     min-height: 25px;
     padding: 15px;
     box-sizing: border-box;
     background: rgb(18, 22, 34);
     border-radius: 7px;
     color: #b9bfd1;
+}
+
+#backToChap {
+    padding-top: 3px;
+    padding-bottom: 3px;
 }
 
 @media (max-width: 700px) {
@@ -136,4 +142,40 @@ a, a:visited, a:active, a:focus, a:link {
 
 nav li {
     color: #dbe3ff !important;
+}
+.foot {
+    max-width:  calc(100% - 80px);
+    margin: 5px 0 15px 5px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    align-self: flex-end;
+}
+
+.foot button {
+    min-width: 85px;
+    height: 38px;
+    padding: 0 15px;
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: 7px;
+    background: rgb(18, 22, 34);
+    color: #dbe3ff;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.foot button:hover {
+    background: #5b5bd6;
+    color: #fff;
+}
+
+#delete:hover {
+    background: #713737;
+    color: #fff;
+}
+
+.chapterInfoCol {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }

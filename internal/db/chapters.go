@@ -238,3 +238,14 @@ func GetEdgeDetails(id string) ([]models.EdgeDetails, fverrors.Error) {
 
 	return edgeDetails, nil
 }
+
+func EraseAllEdges(id string) fverrors.Error {
+	_, err := dbConn.Exec(context.Background(),
+		`DELETE FROM edges WHERE (from_chap=$1) OR (to_chap=$1)`, id)
+
+	if err != nil {
+		return fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred", err)
+	}
+
+	return nil
+}

@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const editorJS = new EditorJS({
-        readOnly: true,
+        readOnly: false,
         holder: "editorJS",
         minHeight: 30,
         tools: {
@@ -51,7 +51,58 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         data: await resp.json(),
     });
+
+    document.getElementById("submit").addEventListener("click", async function (event) {
+        event.preventDefault();
+
+        const content = await editorJS.save()
+            .then((savedData) => {
+                return JSON.stringify(savedData)
+            })
+            .catch((error) => {
+                return ""
+            });
+
+        const formData = new FormData();
+        formData.append("chapter_name", document.getElementById("chapterNameTextInput").value);
+        formData.append("content", content);
+        formData.append("chapter_id", chapter_id);
+        // TODO: edge editing from this page
+        // formData.append("edgesInc", document.getElementById("edgesIncoming").value)
+        // formData.append("edgesOut", document.getElementById("edgesOutgoing").value)
+
+        const req = new Request(`https://localhost:8080/api/editchapter`, {
+            method: "POST",
+            body: formData,
+        });
+
+        const resp = await fetch(req);
+        const jsonRes = await resp.json()
+
+        if (resp.status === 200) {
+            window.location.href = `https://localhost:8080/chapter/view/${chapter_id}`;
+            return
+        }
+
+        console.log(resp, jsonRes);
+    })
+
+    document.getElementById("delete").addEventListener("click", async function (event) {
+        event.preventDefault();
+
+        const req = new Request(`https://localhost:8080/api/chapter/${chapter_id}`, {method: "DELETE"});
+        const resp = await fetch(req);
+        const story_id = document.getElementById("storyIDTextInput").value;
+
+        if (resp.status === 200) {
+            window.location = `https://localhost:8080/story/view/${story_id}`;
+            return
+        }
+
+        console.log(resp.body)
+    })
 })
+
 
 const hamBurger = document.getElementById("hamburger");
 const nav = document.querySelector("nav");
@@ -86,38 +137,3 @@ hamBurger.addEventListener("click", () => {
 
     open = !open;
 });
-
-document.querySelectorAll(".chapterRow").forEach((element, index) => {
-    element.addEventListener("click", () => {
-        window.location = `https://localhost:8080/chapter/view/${element.dataset.chapterid}`
-    })
-})
-
-document.querySelectorAll(".logoAndId").forEach((element, index) => {
-    element.addEventListener("click", () => {
-        window.location = element.dataset.href;
-    })
-})
-
-const editBtn = document.getElementById("edit");
-const deleteBtn = document.getElementById("delete");
-
-if (editBtn){
-    editBtn.addEventListener("click", () => {
-        const id = document.querySelector("body").dataset.chapterid;
-        window.location = `https://localhost:8080/chapter/edit/${id}`;
-    })
-}
-
-if (deleteBtn) {
-    deleteBtn.addEventListener("click", async () => {
-        const id = document.querySelector("body").dataset.chapterid;
-        const res = await fetch(`https://localhost:8080/api/chapter/${id}`, {method: "DELETE"})
-        if (res.status === 200) {
-            window.location= `https://localhost:8080/user/mystories`;
-        } else {
-            const resJson = await res.json()
-            console.log(resJson)
-        }
-    })
-}

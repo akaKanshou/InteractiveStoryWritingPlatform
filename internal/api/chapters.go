@@ -29,6 +29,13 @@ func CreateNewChapter(c *gin.Context, user *models.User) (string, fverrors.Error
 		return "", fverrors.GenericInvalidRequestErr
 	}
 
+	if len(c.PostForm("edgesInc")) > 300 {
+		return "", fverrors.GenericInvalidRequestErr
+	}
+	if len(c.PostForm("edgesOut")) > 300 {
+		return "", fverrors.GenericInvalidRequestErr
+	}
+
 	chapter := &models.Chapter{
 		ChapterID:   rand.Text()[:15],
 		ChapterName: c.PostForm("chapter_name"),
@@ -100,6 +107,13 @@ func EditChapter(c *gin.Context, user *models.User) fverrors.Error {
 		return fverrors.GenericInvalidRequestErr
 	}
 
+	if len(c.PostForm("edgesInc")) > 300 {
+		return fverrors.GenericInvalidRequestErr
+	}
+	if len(c.PostForm("edgesOut")) > 300 {
+		return fverrors.GenericInvalidRequestErr
+	}
+
 	chapter, err := db.GetChapterByID(chapterID)
 	if err != nil {
 		return err
@@ -127,6 +141,45 @@ func EditChapter(c *gin.Context, user *models.User) fverrors.Error {
 
 	if err := db.WriteToFile(chapter.FileID, c.PostForm("content")); err != nil {
 		return err
+	}
+
+	err = db.EraseAllEdges(chapterID)
+	if err == nil {
+		edgePoints := strings.Split(c.PostForm("edgesInc"), ",")
+		for _, chapIDs := range edgePoints {
+			if err := models.ValidateRID(chapIDs); err != nil {
+				continue
+			}
+
+			eStory, err := db.GetStoryByID(chapter.StoryID)
+			if err != nil {
+				continue
+			}
+
+			if (eStory.Visibility == models.VisibilityPrivate) && (eStory.Username != user.Username) {
+				continue
+			}
+
+			_ = db.InsertNewEdge(chapIDs, chapter.ChapterID, eStory.StoryID != story.StoryID)
+		}
+
+		edgePoints = strings.Split(c.PostForm("edgesOut"), ",")
+		for _, chapIDs := range edgePoints {
+			if err := models.ValidateRID(chapIDs); err != nil {
+				continue
+			}
+
+			eStory, err := db.GetStoryByID(chapter.StoryID)
+			if err != nil {
+				continue
+			}
+
+			if (eStory.Visibility == models.VisibilityPrivate) && (eStory.Username != user.Username) {
+				continue
+			}
+
+			_ = db.InsertNewEdge(chapter.ChapterID, chapIDs, eStory.StoryID != story.StoryID)
+		}
 	}
 
 	return nil

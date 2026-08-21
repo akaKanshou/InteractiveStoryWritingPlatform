@@ -709,10 +709,7 @@ func (s *Server) newStoryPageHandler(c *gin.Context) {
 
 func (s *Server) viewStoryPageHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
-	if (err != nil) && !auth.IsPublicAuthenticated(user) {
-		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
-		return
-	} else if err != nil {
+	if (err != nil) && !errors.Is(err, fverrors.NoLoginErr) {
 		fverrors.SendErrorResponse(c, err)
 		return
 	}
@@ -749,10 +746,7 @@ func (s *Server) newChapterPageHandler(c *gin.Context) {
 
 func (s *Server) viewChapterPageHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
-	if (err != nil) && !auth.IsPublicAuthenticated(user) {
-		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
-		return
-	} else if err != nil {
+	if (err != nil) && !errors.Is(err, fverrors.NoLoginErr) {
 		fverrors.SendErrorResponse(c, err)
 		return
 	}
@@ -775,7 +769,7 @@ func (s *Server) viewChapterPageHandler(c *gin.Context) {
 
 func (s *Server) getChapterContentHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
-	if err != nil {
+	if err != nil && !errors.Is(err, fverrors.NoLoginErr) {
 		fverrors.SendErrorResponse(c, err)
 		return
 	}
@@ -810,7 +804,7 @@ func (s *Server) editChapterPageHandler(c *gin.Context) {
 		return
 	}
 
-	servePage(c, "editchapter", models.NewChapterInfoDat(user, chapter, nil))
+	servePage2(c, "editchapter", models.NewChapterInfoDat(user, chapter, nil))
 }
 
 func (s *Server) deleteChapterHandler(c *gin.Context) {

@@ -41,6 +41,8 @@ document.querySelectorAll(".logoAndId").forEach((element, index) => {
 
 const editBtn = document.getElementById("edit");
 const deleteBtn = document.getElementById("delete");
+const newBtn = document.getElementById("new");
+
 if (editBtn){
     editBtn.addEventListener("click", () => {
         const id = document.querySelector("body").dataset.storyid;
@@ -59,6 +61,13 @@ deleteBtn.addEventListener("click", async () => {
         console.log(resJson)
     }
 })
+}
+
+if (newBtn) {
+    newBtn.addEventListener("click", (e) => {
+        const id = document.querySelector("body").dataset.storyid;
+        window.location = `https://localhost:8080/chapter/new?story=${id}`;
+    })
 }
 
 document.querySelectorAll(".chapterRow").forEach((element, index) => {

@@ -7,16 +7,13 @@
 
         <title>Edit Chapter</title>
 
-        <link rel="stylesheet" href="index.css">
-        <link rel="stylesheet" href="editchapter.css">
-        <link rel="stylesheet"
-            href="https://localhost:8080/css/editchapter.css">
+        <link rel="stylesheet" href="https://localhost:8080/css/index.css">
+        <link rel="stylesheet" href="https://localhost:8080/css/editchapter.css">
 
-        <link rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     </head>
 
-    <body>
+    <body data-storyid={{.ChapterInfo.StoryID}}>
 
         <div id="hamburger">
             <div class="hamRows" id="hamburgerRow1"></div>
@@ -28,7 +25,7 @@
             <div id="logo_text">
 
                 <div id="logo">
-                    <img src="images/logo.png" alt="LOGO">
+                    <img src="https://localhost:8080/images/logo.svg" alt="LOGO">
                 </div>
 
                 <div id="text">ForgeVerse</div>
@@ -37,28 +34,14 @@
 
             <ul>
                 <li>
-                    <a href="#">
+                    <a href="https://localhost:8080/">
                         <i class="fa-solid fa-house-chimney"></i>
                         <span>Home</span>
                     </a>
                 </li>
 
                 <li>
-                    <a href="#">
-                        <i class="fa-solid fa-chart-column"></i>
-                        <span>Trending</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
-                        <i class="fa-solid fa-table-list"></i>
-                        <span>Categories</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a href="#">
+                    <a href="https://localhost:8080/user/mystories">
                         <i class="fa-solid fa-pen-nib"></i>
                         <span>My Stories</span>
                     </a>
@@ -68,26 +51,7 @@
 
         <div id="mainPage">
 
-            <div class="Search">
-                <div class="logoAndId">
-
-                    <div class="accountBox">
-
-                        <div class="logo">
-                            <img src="images/theBanner01.jpg" alt="Profile">
-                        </div>
-
-                        <span class="Id">Deepak</span>
-
-                        <span class="dropIcon">
-                            <i class="fa-solid fa-chevron-down"></i>
-                        </span>
-
-                    </div>
-
-                </div>
-            </div>
-
+            {{template "headerTempl" .User}}
             <main class="editChapter">
 
                 <header class="pageHeader">
@@ -193,42 +157,6 @@
             </main>
 
         </div>
-
-        <script>
-        const hamBurger = document.getElementById("hamburger");
-        const nav = document.querySelector("nav");
-
-        const Ham1 = document.getElementById("hamburgerRow1");
-        const Ham2 = document.getElementById("hamburgerRow2");
-        const Ham3 = document.getElementById("hamburgerRow3");
-
-        let open = false;
-
-        hamBurger.addEventListener("click", () => {
-
-            if (!open) {
-                nav.style.left = "0";
-                nav.classList.add("open");
-
-                Ham1.style.transform =
-                    "translateY(8px) rotate(45deg)";
-
-                Ham2.style.opacity = "0";
-
-                Ham3.style.transform =
-                    "translateY(-8px) rotate(-45deg)";
-            } else {
-                nav.style.left = "-250px";
-                nav.classList.remove("open");
-
-                Ham1.style.transform = "rotate(0deg)";
-                Ham2.style.opacity = "1";
-                Ham3.style.transform = "rotate(0deg)";
-            }
-
-            open = !open;
-        });
-    </script>
 
         <script
             src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>

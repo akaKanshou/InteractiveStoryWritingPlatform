@@ -6,7 +6,6 @@
 }
 
 .logoAndId {
-    position: absolute;
     top: 10px;
     right: 10px;
 }
@@ -182,4 +181,8 @@
     .chapterActions button {
         flex: 1;
     }
+}
+
+.ce-toolbar__actions * {
+    color: #8f96ab !important;
 }

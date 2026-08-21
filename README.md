@@ -53,6 +53,11 @@ Local Setup
 >The server runs on HTTPS, so add a public_key and private_key file in the project root (you can generate a self-signed certificate for local development).
 >Run the project using this command in terminal in root directory:  go run cmd/api/main.go
 >Visit https://localhost:8080 in your browser.
+> Execute the following commands (in the postgres binary directory, which you is possibly at "C:\Program Files\PostgreSQL\18\bin")
+   .\dropdb.exe -U postgres Forgeverse
+   .\createdb.exe -U postgres Forgeverse
+   .\psql.exe -U postgres -h localhost -d Forgeverse -f <path_to_sql_dump>
+> Remove the leading underscores from the env and TLS key files.
 
 Team Members
 >Siddarth Anil Nair

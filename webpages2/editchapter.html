@@ -108,7 +108,8 @@
                     <input
                         type="text"
                         id="edgesIncoming"
-                        placeholder="XYZ,ABC">
+                        placeholder="XYZ,ABC"
+                        value="{{range .EdgeDetailsInc}}{{range .Chapters}}{{printf "%s," .ChapterInfo.ChapterID}}{{end}}{{end}}">
 
                 </div>
 
@@ -121,7 +122,8 @@
                     <input
                         type="text"
                         id="edgesOutgoing"
-                        placeholder="XYZ,ABC">
+                        placeholder="XYZ,ABC"
+                        value="{{range .EdgeDetailsOut}}{{range .Chapters}}{{printf "%s," .ChapterInfo.ChapterID}}{{end}}{{end}}">
 
                 </div>
 

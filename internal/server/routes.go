@@ -805,7 +805,13 @@ func (s *Server) editChapterPageHandler(c *gin.Context) {
 		return
 	}
 
-	servePage2(c, "editchapter", models.NewChapterInfoDat(user, chapter, nil, nil))
+	edgeDetailsInc, edgeDetailsOut, err := api.GetEdgeDetails(chapter)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	servePage2(c, "editchapter", models.NewChapterInfoDat(user, chapter, edgeDetailsInc, edgeDetailsOut))
 }
 
 func (s *Server) deleteChapterHandler(c *gin.Context) {

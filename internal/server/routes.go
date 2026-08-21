@@ -34,6 +34,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.GET("/pages", s.pagesHandler)
 	r.GET("/", s.helloWorldHandler)
 	r.GET("/index", s.helloWorldHandler)
+	r.NoRoute(func(c *gin.Context) { servePage2(c, "error404", fverrors.NewNotFoundError()) })
 
 	// auth routes
 	authGroup := r.Group("/auth")

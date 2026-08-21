@@ -4,89 +4,17 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Document</title>
-        <style>
-        * {
-    box-sizing: border-box;
-}
-
-html,
-body {
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
-    font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
-}
-
-
-html {
-    background-color: rgb(1, 12, 26);
-}
-
-body {
-    display: flex;
-    align-items: center;
-    flex-direction:column;
-    min-height: 100vh;
-    background: rgb(1, 12, 26);
-    overflow-y: scroll;
-    scrollbar-width: none;
-    overflow-x: hidden;
-    width: 100%;
-}
-
-body::-webkit-scrollbar,
-.slides::-webkit-scrollbar {
-    display: none;
-}
-        .TheError{
-            margin-top:230px;
-           color:#f1f5f9;
-           font-size: 30px;
-        }
-        .TheMessage{
-            color:#94a3b8;
-            font-size: 20px;
-        }
-        .redirectButton{
-            width: 300px;
-            height: 50px;
-            border-radius: 30px;
-            background:#1e293b;
-            display: flex;
-             flex-direction:column;
-           align-items: center;
-           caret-color: transparent;
-        }
-        .redirectButton a{
-            color:#cbd5e1;
-            text-decoration: none;
-            font-weight: 400;
-            font-size: 25px;
-            transition: 0.7s;
-
-        }
-        .redirectButton:hover{
-            background:#2563eb;
-            color:#ffffff;
-            font-weight:600;
-            font-size:larger;
-            text-shadow: 0.25px 0.25px 0px white;
-            border:2px solid #60a5fa;
-        }
-        body div{
-            margin-top:25px;
-        }
-    </style>
+        <link rel="stylesheet" href="https://localhost:8080/css/error.css">
     </head>
     <body>
         <div class="TheError">
-            Error 404!
+            Error {{.Code}}!
         </div>
         <div class="TheMessage">
-            This Page cant be reached!
+            {{.ResponseError}}
         </div>
         <div class="redirectButton">
-            <a href="http://">Home</a>
+            <a href="https://localhost:8080/">Home</a>
         </div>
     </body>
 </html>

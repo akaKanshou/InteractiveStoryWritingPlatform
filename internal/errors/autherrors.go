@@ -65,3 +65,21 @@ func (b *InvalidRequestError) ResponseError() string {
 func (b *InvalidRequestError) Code() int {
 	return http.StatusUnprocessableEntity
 }
+
+type NotFoundError struct{}
+
+func NewNotFoundError() *NotFoundError {
+	return &NotFoundError{}
+}
+
+func (e *NotFoundError) Error() string {
+	return "page not found"
+}
+
+func (e *NotFoundError) Code() int {
+	return http.StatusNotFound
+}
+
+func (e *NotFoundError) ResponseError() string {
+	return `The page you were looking for doesn't exist!`
+}

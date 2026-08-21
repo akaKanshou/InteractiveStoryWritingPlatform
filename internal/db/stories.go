@@ -130,7 +130,7 @@ func UpdateStoryLastUpdated(storyID string, timeNow int64, deltaChapters int) fv
 func GetLatestStories(limit int) ([]models.Story, fverrors.Error) {
 	rows, err := dbConn.Query(context.Background(),
 		`SELECT 
-    story_id, story_name, description, visibility, last_updated, chapters, username 
+    story_id, story_name, description, last_updated, chapters, username 
 	FROM stories
 	WHERE visibility>1
 	ORDER BY last_updated DESC
@@ -145,7 +145,7 @@ func GetLatestStories(limit int) ([]models.Story, fverrors.Error) {
 	for rows.Next() {
 		story := models.Story{}
 
-		err := rows.Scan(&story.StoryID, &story.StoryName, &story.Description, &story.Visibility, &story.LastUpdated,
+		err := rows.Scan(&story.StoryID, &story.StoryName, &story.Description, &story.LastUpdated,
 			&story.Chapters, &story.Username)
 
 		if err != nil {

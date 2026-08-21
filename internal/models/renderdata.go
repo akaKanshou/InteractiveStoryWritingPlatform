@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+var (
+	// TODO: fill editors pick
+	EditorsPickIDs = []string{}
+)
+
 type MyStoriesData struct {
 	User       *User
 	TargetUser *User
@@ -150,4 +155,32 @@ type ChapterList struct {
 	Index    int
 	Fork     bool
 	Chapters []*ChapterInfoDat
+}
+
+type HomePageData struct {
+	User        *User
+	EditorsPick []StoryInfoDat
+	Latest      []StoryInfoDat
+}
+
+func NewHomePageData(user *User, editorsPicks, latestStories []Story) *HomePageData {
+	editorsPicksInfo := make([]StoryInfoDat, 0, len(editorsPicks))
+	for _, editorsPick := range editorsPicks {
+		editorsPicksInfo = append(editorsPicksInfo, StoryInfoDat{
+			StoryInfo:       editorsPick,
+			LastUpdatedDate: getTimeString(editorsPick.LastUpdated),
+		})
+	}
+	latestStoriesInfo := make([]StoryInfoDat, 0, len(editorsPicks))
+	for _, lastestStory := range latestStories {
+		latestStoriesInfo = append(latestStoriesInfo, StoryInfoDat{
+			StoryInfo:       lastestStory,
+			LastUpdatedDate: getTimeString(lastestStory.LastUpdated),
+		})
+	}
+	return &HomePageData{
+		User:        user,
+		EditorsPick: editorsPicksInfo,
+		Latest:      latestStoriesInfo,
+	}
 }

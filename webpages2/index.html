@@ -38,7 +38,7 @@
 
         <div id="mainPage">
 
-            {{template "headerTempl" .}}
+            {{template "headerTempl" .User}}
 
             <div class="mainSlider">
 
@@ -69,7 +69,7 @@
                         <h1>Write Your Own Story</h1>
                         <p>Turn your imagination into interactive adventures and
                             publish them on ForgeVerse.</p>
-                        <a href="https://localhost:8080/user/{{.Username}}" class="sliderButton">Start
+                        <a href="https://localhost:8080/user/mystories" class="sliderButton">Start
                             Writing →</a>
                     </div>
                 </div>
@@ -82,14 +82,14 @@
 
                     <div class="sliderContent">
                         <span class="sliderTag">WELCOME</span>
-                        {{if .UserID}}
+                        {{if .User.UserID}}
                             <h1>Welcome to ForgeVerse</h1>
                         {{else}}
                             <h1>Login to Continue</h1>
                         {{end}}
                         <p>Save your progress, follow creators, and discover
                             stories made just for you.</p>
-                        {{if .UserID}}
+                        {{if .User.UserID}}
                         {{else}}
                         <a href="https://localhost:8080/auth/login" class="sliderButton">Login / Sign
                             Up →</a>
@@ -118,19 +118,9 @@
 <!--                            class="sliderButtomLeft sliderButton sliderButtonLeft">&lt;</button>-->
 
                         <div class="slides">
-                            <div class="slide">
-                                <div class="slide-content">
-                                    <h3 class="titleOfSlide">The Last
-                                        Signal</h3>
-                                    <p class="DesOfSlide">A distant transmission
-                                        brings together strangers who may hold
-                                        the key to a hidden mystery.</p>
-                                    <div class="slide-footer">
-                                        <span class="upload-time">Updated 3 days
-                                            ago</span>
-                                    </div>
-                                </div>
-                            </div>
+                            {{range .EditorsPick}}
+                            {{template "storyCardMin" .}}
+                            {{end}}
                         </div>
 
 <!--                        <button-->
@@ -146,7 +136,9 @@
 <!--                            class="sliderButtomLeft sliderButton sliderButtonLeft">&lt;</button>-->
 
                         <div class="slides">
-                        
+                            {{range .Latest}}
+                            {{template "storyCardMin" .}}
+                            {{end}}
                         </div>
 
 <!--                        <button-->

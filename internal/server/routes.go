@@ -215,7 +215,13 @@ func (s *Server) helloWorldHandler(c *gin.Context) {
 		return
 	}
 
-	servePage2(c, "index", u)
+	editorsPicks, latestStories, err := api.GetHomePageStories()
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	servePage2(c, "index", models.NewHomePageData(u, editorsPicks, latestStories))
 }
 
 /*

@@ -95,23 +95,24 @@ func EditStory(c *gin.Context, user *models.User) fverrors.Error {
 	return nil
 }
 
-func GetHomePageStories() ([][]models.Story, fverrors.Error) {
-	stories := make([][]models.Story, 3)
-	var err fverrors.Error
+func GetHomePageStories() ([]models.Story, []models.Story, fverrors.Error) {
 
-	stories[0], err = db.GetLatestStories(3)
+	latestStories, err := db.GetLatestStories(4)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	stories[1] = nil
+	editorsPicks := make([]models.Story, 0, 4)
+	for _, id := range models.EditorsPickIDs {
+		story, err := db.GetStoryByID(id)
+		if err != nil {
+			return nil, nil, err
+		}
 
-	stories[2], err = db.GetLatestStories(21)
-	if err != nil {
-		return nil, err
+		editorsPicks = append(editorsPicks, *story)
 	}
 
-	return stories, nil
+	return nil, latestStories, err
 }
 
 func DeleteStory(user *models.User, c *gin.Context) fverrors.Error {

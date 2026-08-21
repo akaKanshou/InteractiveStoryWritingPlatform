@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>My Stories</title>
+        <title>{{.TargetUser.Username}}</title>
 
         <link rel="stylesheet" href="https://localhost:8080/css/index.css">
         <link rel="stylesheet" href="https://localhost:8080/css/MyStories.css">
@@ -31,14 +31,14 @@
 
             <ul>
                 <li>
-                    <a href="#">
+                    <a href="https://localhost:8080/">
                         <i class="fa-solid fa-house-chimney"></i>
                         <span>Home</span>
                     </a>
                 </li>
 
                 <li>
-                    <a href="#"><i class="fa-solid fa-pen-nib"></i><span>My
+                    <a href="https://localhost:8080/user/mystories"><i class="fa-solid fa-pen-nib"></i><span>My
                                 Stories</span></a>
                 </li>            </ul>
         </nav>
@@ -78,12 +78,12 @@
                 <div class="title">
 
                     <div class="page-heading">
-                        <h1>My Stories</h1>
+                        <h1>{{.TargetUser.Username}}'s Stories</h1>
                         <p>Manage and continue your stories</p>
                     </div>
 
                     <div class="head head1">
-
+                        {{if eq .User.Username .TargetUser.Username}}
                         <button class="Hb Hb1 active" data-filter="all">
                             All Stories
                         </button>
@@ -95,7 +95,7 @@
                         <button class="Hb Hb3" data-filter="public">
                             Public
                         </button>
-
+                        {{end}}
                     </div>
 
                 </div>
@@ -121,10 +121,12 @@
                         </div>
 
                         <div class="H2e H2e3">
+                            {{if eq .User.Username .TargetUser.Username}}
                             <button class="Create" id="createButton">
                                 <i class="fa-solid fa-plus"></i>
                                 Create
                             </button>
+                            {{end}}
                         </div>
                     </div>
 

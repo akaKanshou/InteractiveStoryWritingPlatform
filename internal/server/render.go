@@ -10,7 +10,7 @@ import (
 var templates, templates2 *template.Template
 
 func init() {
-	templates = template.Must(templates.ParseGlob("./webpages/*.html"))
+	templates = template.Must(templates.ParseGlob("./webpages2/*.html"))
 	templates2 = template.Must(templates.ParseGlob("./webpages2/*.html"))
 }
 

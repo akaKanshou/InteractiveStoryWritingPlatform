@@ -6,13 +6,14 @@ import (
 )
 
 type MyStoriesData struct {
-	User    *User
-	Stories []StoryInfoDat
+	User       *User
+	TargetUser *User
+	Stories    []StoryInfoDat
 
 	Err error
 }
 
-func NewMyStoriesData(user *User, stories []Story) *MyStoriesData {
+func NewMyStoriesData(user *User, targetUser *User, stories []Story) *MyStoriesData {
 	storiesInfo := make([]StoryInfoDat, len(stories))
 	for i, story := range stories {
 		storiesInfo[i] = StoryInfoDat{
@@ -21,8 +22,9 @@ func NewMyStoriesData(user *User, stories []Story) *MyStoriesData {
 		}
 	}
 	data := &MyStoriesData{
-		User:    user,
-		Stories: storiesInfo,
+		User:       user,
+		TargetUser: targetUser,
+		Stories:    storiesInfo,
 	}
 
 	return data

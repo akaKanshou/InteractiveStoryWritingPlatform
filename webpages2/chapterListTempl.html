@@ -24,7 +24,8 @@
             <div class="chapterNameBox">{{.ChapterInfo.ChapterName}}</div>
             <div class="chapterLastUpdated">
                 <span>{{.LastUpdatedDate}}</span>
-                <span>@{{.ChapterInfo.Username}}</span>
+                <span class="authorLink" data-username={{.ChapterInfo.Username}}>
+                    <a href="https://localhost:8080/user/{{.ChapterInfo.Username}}">@{{.ChapterInfo.Username}}</a></span>
             </div>
         </li>
         {{end}}

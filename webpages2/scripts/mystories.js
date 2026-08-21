@@ -1,7 +1,3 @@
-function getTimeString() {
-
-}
-
 document.querySelectorAll(".logoAndId").forEach((element, index) => {
     element.addEventListener("click", () => {
         window.location = element.dataset.href;
@@ -159,15 +155,13 @@ listButton.addEventListener("click", () => {
 
 });
 
+const createBtn = document.querySelector(".Create")
 
-document
-    .querySelector(".Create")
-    .addEventListener("click", () => {
-
+if (createBtn) {
+    createBtn.addEventListener("click", () => {
         window.location = "https://localhost:8080/story/new";
-
     });
-
+}
 
 document.querySelectorAll(".slide").forEach((element, index) => {
     element.addEventListener("click", () => {

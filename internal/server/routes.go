@@ -51,6 +51,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	userGroup := r.Group("/user")
 	{
 		userGroup.GET("/mystories", s.userMyStoriesHandler)
+		userGroup.GET("/:username", s.userPageHandler)
 	}
 
 	storyGroup := r.Group("/story")
@@ -328,7 +329,7 @@ func (s *Server) userMyStoriesHandler(c *gin.Context) {
 		return
 	}
 
-	servePage2(c, "MyStories", models.NewMyStoriesData(user, stories))
+	servePage2(c, "MyStories", models.NewMyStoriesData(user, user, stories))
 }
 
 /*
@@ -867,4 +868,36 @@ func (s *Server) editStoryPageHandler(c *gin.Context) {
 	}
 
 	servePage2(c, "editstory", models.NewStoryPageDat(user, story, nil))
+}
+
+func (s *Server) userPageHandler(c *gin.Context) {
+	user, err := auth.GetUserFromSession(c)
+	if (err != nil) && (!errors.Is(err, fverrors.NoLoginErr)) {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	username := c.Param("username")
+	if err = models.ValidateUsername(username); err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+	targetUser, err := db.GetUserByUsername(username)
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	var stories []models.Story
+	if user.Username == targetUser.Username {
+		stories, err = api.GetStoriesByUser(user, c, targetUser.Username, "all")
+	} else {
+		stories, err = api.GetStoriesByUser(user, c, targetUser.Username, "public")
+	}
+	if err != nil {
+		fverrors.SendErrorResponse(c, err)
+		return
+	}
+
+	servePage2(c, "MyStories", models.NewMyStoriesData(user, targetUser, stories))
 }

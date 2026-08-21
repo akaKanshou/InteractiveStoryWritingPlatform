@@ -38,7 +38,7 @@ document.querySelectorAll(".logoAndId").forEach((element, index) => {
     })
 })
 
-document.querySelectorAll(".slide").forEach((element, index) => {
+document.querySelectorAll(".slide.storyCard").forEach((element, index) => {
     element.addEventListener("click", () => {
         window.location = element.dataset.href;
     })

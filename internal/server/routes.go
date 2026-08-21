@@ -233,7 +233,7 @@ Description: Login page endpoint
 func (s *Server) loginHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if err != nil && !errors.Is(err, fverrors.NoLoginErr) {
-		fverrors.SendErrorResponse(c, err)
+		servePage2(c, "error404", err)
 		return
 	}
 
@@ -261,7 +261,7 @@ func (s *Server) userCreateHandler(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
 		return
 	} else if err != nil {
-		fverrors.SendErrorResponse(c, err)
+		servePage2(c, "error404", err)
 		return
 	}
 
@@ -292,7 +292,7 @@ func (s *Server) userRegisterHandler(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
 		return
 	} else if err != nil {
-		fverrors.SendErrorResponse(c, err)
+		servePage2(c, "error404", err)
 		return
 	}
 
@@ -300,13 +300,13 @@ func (s *Server) userRegisterHandler(c *gin.Context) {
 
 	user, err = db.RegisterUser(user)
 	if err != nil {
-		fverrors.SendErrorResponse(c, err)
+		servePage2(c, "error404", err)
 		return
 	}
 
 	err = auth.SaveUserToSession(c, user)
 	if err != nil {
-		fverrors.SendErrorResponse(c, err)
+		servePage2(c, "error404", err)
 		return
 	}
 
@@ -321,7 +321,7 @@ Description: Show currently logged-in user's stories
 func (s *Server) userMyStoriesHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if (err != nil) && (!errors.Is(err, fverrors.NoLoginErr)) {
-		fverrors.SendErrorResponse(c, err)
+		servePage2(c, "error404", err)
 		return
 	}
 
@@ -332,7 +332,7 @@ func (s *Server) userMyStoriesHandler(c *gin.Context) {
 
 	stories, err := api.GetStoriesByUser(user, c, user.Username, "all")
 	if err != nil {
-		fverrors.SendErrorResponse(c, err)
+		servePage2(c, "error404", err)
 		return
 	}
 
@@ -712,25 +712,25 @@ func (s *Server) newStoryPageHandler(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
 		return
 	}
-	fverrors.SendErrorResponse(c, err)
+	servePage2(c, "error404", err)
 }
 
 func (s *Server) viewStoryPageHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if (err != nil) && !errors.Is(err, fverrors.NoLoginErr) {
-		fverrors.SendErrorResponse(c, err)
+		servePage2(c, "error404", err)
 		return
 	}
 
 	story, err := api.GetStoryByID(user, c)
 	if err != nil {
-		fverrors.SendErrorResponse(c, err)
+		servePage2(c, "error404", err)
 		return
 	}
 
 	chapters, err := api.GetChaptersByStory(user, c)
 	if err != nil {
-		fverrors.SendErrorResponse(c, err)
+		servePage2(c, "error404", err)
 		return
 	}
 
@@ -749,25 +749,25 @@ func (s *Server) newChapterPageHandler(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
 		return
 	}
-	fverrors.SendErrorResponse(c, err)
+	servePage2(c, "error404", err)
 }
 
 func (s *Server) viewChapterPageHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if (err != nil) && !errors.Is(err, fverrors.NoLoginErr) {
-		fverrors.SendErrorResponse(c, err)
+		servePage2(c, "error404", err)
 		return
 	}
 
 	chapter, err := api.GetChapterByID(user, c)
 	if err != nil {
-		fverrors.SendErrorResponse(c, err)
+		servePage2(c, "error404", err)
 		return
 	}
 
 	edgeDetailsInc, edgeDetailsOut, err := api.GetEdgeDetails(chapter)
 	if err != nil {
-		fverrors.SendErrorResponse(c, err)
+		servePage2(c, "error404", err)
 		return
 	}
 
@@ -797,18 +797,18 @@ func (s *Server) editChapterPageHandler(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
 		return
 	} else if err != nil {
-		fverrors.SendErrorResponse(c, err)
+		servePage2(c, "error404", err)
 		return
 	}
 
 	chapter, err := api.GetChapterByID(user, c)
 	if err != nil {
-		fverrors.SendErrorResponse(c, err)
+		servePage2(c, "error404", err)
 		return
 	}
 
 	if chapter.Username != user.Username {
-		fverrors.SendErrorResponse(c, fverrors.UnAuthorizedErr)
+		servePage2(c, "error404", err)
 		return
 	}
 
@@ -865,18 +865,18 @@ func (s *Server) editStoryPageHandler(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
 		return
 	} else if err != nil {
-		fverrors.SendErrorResponse(c, err)
+		servePage2(c, "error404", err)
 		return
 	}
 
 	story, err := api.GetStoryByID(user, c)
 	if err != nil {
-		fverrors.SendErrorResponse(c, err)
+		servePage2(c, "error404", err)
 		return
 	}
 
 	if story.Username != user.Username {
-		fverrors.SendErrorResponse(c, fverrors.UnAuthorizedErr)
+		servePage2(c, "error404", err)
 		return
 	}
 
@@ -886,18 +886,18 @@ func (s *Server) editStoryPageHandler(c *gin.Context) {
 func (s *Server) userPageHandler(c *gin.Context) {
 	user, err := auth.GetUserFromSession(c)
 	if (err != nil) && (!errors.Is(err, fverrors.NoLoginErr)) {
-		fverrors.SendErrorResponse(c, err)
+		servePage2(c, "error404", err)
 		return
 	}
 
 	username := c.Param("username")
 	if err = models.ValidateUsername(username); err != nil {
-		fverrors.SendErrorResponse(c, err)
+		servePage2(c, "error404", err)
 		return
 	}
 	targetUser, err := db.GetUserByUsername(username)
 	if err != nil {
-		fverrors.SendErrorResponse(c, err)
+		servePage2(c, "error404", err)
 		return
 	}
 
@@ -908,7 +908,7 @@ func (s *Server) userPageHandler(c *gin.Context) {
 		stories, err = api.GetStoriesByUser(user, c, targetUser.Username, "public")
 	}
 	if err != nil {
-		fverrors.SendErrorResponse(c, err)
+		servePage2(c, "error404", err)
 		return
 	}
 

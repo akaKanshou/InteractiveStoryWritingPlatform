@@ -245,12 +245,21 @@ func CreateNewEdge(c *gin.Context, user *models.User) fverrors.Error {
 		return err
 	}
 
-	story, err := db.GetStoryByID(fromChapter.StoryID)
+	fromStory, err := db.GetStoryByID(fromChapter.StoryID)
 	if err != nil {
 		return err
 	}
 
-	if (story.Visibility == models.VisibilityPrivate) && (story.Username != user.Username) {
+	if (fromStory.Visibility == models.VisibilityPrivate) && (fromStory.Username != user.Username) {
+		return fverrors.UnAuthorizedErr
+	}
+
+	toStory, err := db.GetStoryByID(toChapter.StoryID)
+	if err != nil {
+		return err
+	}
+
+	if (toStory.Visibility == models.VisibilityPrivate) && (toStory.Username != user.Username) {
 		return fverrors.UnAuthorizedErr
 	}
 
@@ -337,6 +346,16 @@ func DeleteChapter(user *models.User, c *gin.Context) fverrors.Error {
 	return nil
 }
 
-func GetEdgeDetails(chapter *models.Chapter) ([]models.EdgeDetails, fverrors.Error) {
-	return db.GetEdgeDetails(chapter.ChapterID)
+func GetEdgeDetails(chapter *models.Chapter) ([]models.EdgeDetails, []models.EdgeDetails, fverrors.Error) {
+	toEdges, err := db.GetEdgeDetailsTo(chapter.ChapterID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	fromEdges, err := db.GetEdgeDetailsFrom(chapter.ChapterID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return toEdges, fromEdges, nil
 }

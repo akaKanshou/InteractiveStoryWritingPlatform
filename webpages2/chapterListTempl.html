@@ -1,4 +1,5 @@
 {{define "chapterListTempl"}}
+{{if not .Fork}}
 <li>
     Chapter {{.Index}}
     <ul class="chapterSubList">
@@ -11,3 +12,24 @@
     </ul>
 </li>
 {{end}}
+{{end}}
+
+{{define "forkListTempl"}}
+{{if .Fork}}
+<li>
+    Chapter {{.Index}}
+    <ul class="chapterSubList">
+        {{range .Chapters}}
+        <li class="chapterRow" data-chapterid={{.ChapterInfo.ChapterID}}>
+            <div class="chapterNameBox">{{.ChapterInfo.ChapterName}}</div>
+            <div class="chapterLastUpdated">
+                <span>{{.LastUpdatedDate}}</span>
+                <span>@{{.ChapterInfo.Username}}</span>
+            </div>
+        </li>
+        {{end}}
+    </ul>
+</li>
+{{end}}
+{{end}}
+

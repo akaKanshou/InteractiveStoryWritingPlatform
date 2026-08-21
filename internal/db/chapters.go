@@ -204,9 +204,9 @@ func DeleteChapter(chapter *models.Chapter) fverrors.Error {
 	return nil
 }
 
-func GetEdgeDetails(id string) ([]models.EdgeDetails, fverrors.Error) {
+func GetEdgeDetailsTo(id string) ([]models.EdgeDetails, fverrors.Error) {
 	rows, err := dbConn.Query(context.Background(),
-		`SELECT T.chapter_name, T.chapter_id, T.index, T.last_updated
+		`SELECT T.chapter_name, T.chapter_id, T.index, T.last_updated, T.story_id
 				FROM edges E 
 				INNER JOIN chapters T ON E.to_chap=T.chapter_id
 				WHERE E.from_chap=$1 ORDER BY T.index`, id)
@@ -218,12 +218,47 @@ func GetEdgeDetails(id string) ([]models.EdgeDetails, fverrors.Error) {
 	edgeDetails := make([]models.EdgeDetails, 0, 256)
 	for rows.Next() {
 		edgeDetail := models.EdgeDetails{
-			FromChapter: &models.Chapter{},
+			FromChapter: nil,
 			ToChapter:   &models.Chapter{},
 		}
 
-		err = rows.Scan(&edgeDetail.ToChapter.ChapterName,
-			&edgeDetail.ToChapter.ChapterID, &edgeDetail.ToChapter.Index, &edgeDetail.ToChapter.LastUpdated)
+		err = rows.Scan(&edgeDetail.ToChapter.ChapterName, &edgeDetail.ToChapter.ChapterID, &edgeDetail.ToChapter.Index,
+			&edgeDetail.ToChapter.LastUpdated, &edgeDetail.ToChapter.StoryID)
+
+		if err != nil {
+			return nil, fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred", err)
+		}
+
+		edgeDetails = append(edgeDetails, edgeDetail)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred", err)
+	}
+
+	return edgeDetails, nil
+}
+
+func GetEdgeDetailsFrom(id string) ([]models.EdgeDetails, fverrors.Error) {
+	rows, err := dbConn.Query(context.Background(),
+		`SELECT F.chapter_name, F.chapter_id, F.index, F.last_updated, F.story_id
+				FROM edges E 
+				INNER JOIN chapters F ON E.from_chap=F.chapter_id
+				WHERE E.to_chap=$1 ORDER BY F.index`, id)
+
+	if err != nil {
+		return nil, fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred", err)
+	}
+
+	edgeDetails := make([]models.EdgeDetails, 0, 256)
+	for rows.Next() {
+		edgeDetail := models.EdgeDetails{
+			FromChapter: &models.Chapter{},
+			ToChapter:   nil,
+		}
+
+		err = rows.Scan(&edgeDetail.FromChapter.ChapterName, &edgeDetail.FromChapter.ChapterID,
+			&edgeDetail.FromChapter.Index, &edgeDetail.FromChapter.LastUpdated, &edgeDetail.FromChapter.StoryID)
 
 		if err != nil {
 			return nil, fverrors.NewDBError(http.StatusInternalServerError, "An unexpected error occurred", err)

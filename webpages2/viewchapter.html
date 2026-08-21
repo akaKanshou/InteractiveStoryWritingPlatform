@@ -92,31 +92,44 @@
                     <div class="row" id="outgoingEdges">
                         <h3>Next Chapters: </h3>
                         <ul class="indexList">
-                            {{range .EdgeDetails}}
+                            {{range .EdgeDetailsInc}}
                             {{template "chapterListTempl" .}}
                             {{end}}
                         </ul>
                     </div>
+
+                    <div class="row" id="incomingEdges">
+                        <h3>Previous Chapters: </h3>
+                        <ul class="indexList">
+                            {{range .EdgeDetailsOut}}
+                            {{template "chapterListTempl" .}}
+                            {{end}}
+                        </ul>
+                    </div>
+
+                    <div class="row" id="outgoingForks">
+                        <h3>Outgoing Forks:</h3>
+                        <ul class="indexList">
+                            {{range .EdgeDetailsOut}}
+                            {{template "forkListTempl" .}}
+                            {{end}}
+                        </ul>
+                    </div>
+
+                    <div class="row" id="incomingForks">
+                        <h3>Incoming Forks:</h3>
+                        <ul class="indexList">
+                            {{range .EdgeDetailsOut}}
+                            {{template "forkListTempl" .}}
+                            {{end}}
+                        </ul>
+                    </div>
+
                     <div class="row" id="backToChap">
                         <a href="https://localhost:8080/story/view/{{.ChapterInfo.StoryID}}">
                             <h3>Back toStory</h3>
                         </a>
                     </div>
-<!--                    <div class="row" id="incomingEdges">-->
-<!--                        <h3>Previous Chapters: </h3>-->
-<!--                        <ul class="indexList">-->
-<!--                            {{range .EdgeDetails}}-->
-<!--                            {{template "chapterListTempl" .}}-->
-<!--                            {{end}}-->
-<!--                        </ul>-->
-<!--                    </div>-->
-
-<!--                    <div class="row" id="outgoingForks">-->
-<!--                    </div>-->
-
-<!--                    <div class="row" id="incomingForks">-->
-<!--                    </div>-->
-
 
                 </div>
 

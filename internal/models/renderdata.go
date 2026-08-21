@@ -68,29 +68,50 @@ func NewStoryInfoDat(story *Story) *StoryInfoDat {
 type ChapterInfoDat struct {
 	User            *User
 	ChapterInfo     Chapter
-	EdgeDetails     []ChapterList
+	EdgeDetailsInc  []ChapterList
+	EdgeDetailsOut  []ChapterList
 	LastUpdatedDate string
 }
 
-func NewChapterInfoDat(user *User, chapter *Chapter, edgeDetails []EdgeDetails) *ChapterInfoDat {
-	chapList := make([]ChapterList, 0, len(edgeDetails))
-	for _, edge := range edgeDetails {
+func NewChapterInfoDat(user *User, chapter *Chapter, edgeDetailsInc []EdgeDetails,
+	edgeDetailsOut []EdgeDetails) *ChapterInfoDat {
+	chapList := make([]ChapterList, 0, len(edgeDetailsInc))
+	for _, edge := range edgeDetailsInc {
 		toChapter := edge.ToChapter
 		lenList := len(chapList)
 		if (lenList == 0) || (chapList[lenList-1].Index != toChapter.Index) {
 			chapList = append(chapList, ChapterList{
-				Index:    chapter.Index,
-				Chapters: []*ChapterInfoDat{NewChapterInfoDat(nil, toChapter, nil)},
+				Index:    toChapter.Index,
+				Fork:     chapter.StoryID != toChapter.StoryID,
+				Chapters: []*ChapterInfoDat{NewChapterInfoDat(nil, toChapter, nil, nil)},
 			})
 		} else {
-			chapList[lenList-1].Chapters = append(chapList[lenList-1].Chapters, NewChapterInfoDat(nil, toChapter, nil))
+			chapList[lenList-1].Chapters = append(chapList[lenList-1].Chapters, NewChapterInfoDat(nil, toChapter,
+				nil, nil))
+		}
+	}
+
+	chapList2 := make([]ChapterList, 0, len(edgeDetailsOut))
+	for _, edge := range edgeDetailsOut {
+		fromChapter := edge.FromChapter
+		lenList := len(chapList2)
+		if (lenList == 0) || (chapList2[lenList-1].Index != fromChapter.Index) {
+			chapList2 = append(chapList2, ChapterList{
+				Index:    fromChapter.Index,
+				Fork:     chapter.StoryID != fromChapter.StoryID,
+				Chapters: []*ChapterInfoDat{NewChapterInfoDat(nil, fromChapter, nil, nil)},
+			})
+		} else {
+			chapList2[lenList-1].Chapters = append(chapList2[lenList-1].Chapters, NewChapterInfoDat(nil, fromChapter,
+				nil, nil))
 		}
 	}
 
 	return &ChapterInfoDat{
 		User:            user,
 		ChapterInfo:     *chapter,
-		EdgeDetails:     chapList,
+		EdgeDetailsInc:  chapList,
+		EdgeDetailsOut:  chapList2,
 		LastUpdatedDate: getTimeString(chapter.LastUpdated),
 	}
 }
@@ -108,10 +129,11 @@ func NewStoryPageDat(user *User, story *Story, chapterList []*Chapter) *StoryPag
 		if (lenList == 0) || (chapList[lenList-1].Index != chapter.Index) {
 			chapList = append(chapList, ChapterList{
 				Index:    chapter.Index,
-				Chapters: []*ChapterInfoDat{NewChapterInfoDat(nil, chapter, nil)},
+				Chapters: []*ChapterInfoDat{NewChapterInfoDat(nil, chapter, nil, nil)},
 			})
 		} else {
-			chapList[lenList-1].Chapters = append(chapList[lenList-1].Chapters, NewChapterInfoDat(nil, chapter, nil))
+			chapList[lenList-1].Chapters = append(chapList[lenList-1].Chapters, NewChapterInfoDat(nil, chapter, nil,
+				nil))
 		}
 	}
 
@@ -124,5 +146,6 @@ func NewStoryPageDat(user *User, story *Story, chapterList []*Chapter) *StoryPag
 
 type ChapterList struct {
 	Index    int
+	Fork     bool
 	Chapters []*ChapterInfoDat
 }

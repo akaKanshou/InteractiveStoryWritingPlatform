@@ -57,11 +57,7 @@
     margin-top: 30px;
 }
 
-#outgoingEdges,
-#incomingEdges,
-#outgoingForks,
-#incomingForks,
-#backToChap {
+.row {
     min-height: 25px;
     padding: 15px;
     box-sizing: border-box;
@@ -178,4 +174,36 @@ nav li {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+}
+
+/*
+editorJS css
+https://github.com/codex-team/editor.js/discussions/1891#discussioncomment-10853881
+ */
+
+/*
+   Example: editor.css
+
+   This CSS controls the width of EditorJS blocks.
+   You can easily adjust the width by changing the --block-width variable below.
+*/
+
+/* Set the block width (default: 780px) */
+:root {
+    --block-width: 95%; /* Change this value to set your desired block width */
+}
+
+/* Apply the block width to EditorJS elements */
+.ce-block__content,  /* Content inside each block */
+.ce-block,           /* The block wrapper */
+.codex-editor__redactor, /* Main editing area */
+.ce-toolbar__content { /* Toolbar content for editing */
+    max-width: var(--block-width); /* Use the block width set in :root */
+    width: var(--block-width); /* Apply the block width */
+    margin: 0 auto; /* Center the blocks */
+}
+
+/* Adjust the toolbar position in narrow mode (optional) */
+.codex-editor--narrow .ce-toolbar__actions {
+    right: -40px; /* Adjust toolbar position as needed */
 }
